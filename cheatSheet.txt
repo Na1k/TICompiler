@@ -1,0 +1,28 @@
+Tracken einer Remote Git-Branch:
+-->git pull
+-->git checkout --track origin/<branch>
+
+
+Erstellen einer Branch (lokal)
+-->git branch <name>
+Oder
+-->git checkout -b <branchname>
+
+Files tracken:
+-->git add <file/folder>
+
+Committen:
+-->git commit
+-->nachricht anpassen
+
+Pushen:
+-->git push
+
+Alle Branches anzeigen:
+-->git branch -a
+
+Branch löschen:
+-->git branch -d <branchname>
+
+Branches lokal updaten:
+-->git remote update origin --prune
