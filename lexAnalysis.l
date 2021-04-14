@@ -8,7 +8,10 @@
 %%
 ";"			my_return("");
 "int"			my_return("TYPE_INT");			
+
 "if"			my_return("IF");
+"else"			my_return("TYPE_ELSE");
+
 0			my_return("ZERO");
 [-]?[1-9][0-9]*		my_return(yytext);
 
