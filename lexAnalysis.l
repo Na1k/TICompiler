@@ -2,23 +2,38 @@
 %{
 	#include<stdio.h>
 	int yylineno;
+//	char buffer[1024]
 %}
 		
 %%
 ";"			my_return("");
 "int"			my_return("TYPE_INT");			
+"if"			my_return("IF");
 0			my_return("ZERO");
 [-]?[1-9][0-9]*		my_return(yytext);
 
-[a-z][a-zA-Z0-9_-]*	my_return(sprintf("VAR_%s",yytext));
+[a-z][a-zA-Z0-9_-]*	{
+				if(yyleng > 49){my_return("ERROR_TOKENLEN");}
+				char str[50];
+				sprintf(str, "VAR_%s", yytext);
+				my_return(str);
+			}
 "="			my_return("EQUAL");
 "("			my_return("LP");
 ")"			my_return("RP");
 
-\n			printf("\n");
+\n			{
+				printf("\n");
+				yylineno++;
+			}
 [ \t]			;
 
-.			my_return(sprintf("ERROR: %s", yytext));
+.			{
+                                if(yyleng > 49){my_return("ERROR_TOKENLEN");}
+                                char str[50];
+                                sprintf(str, "ERROR: %s", yytext);
+                                my_return(str);
+                        }
 
 %%
 
