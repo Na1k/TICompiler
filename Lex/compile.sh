@@ -2,4 +2,4 @@
 
 flex $1
 gcc lex.yy.c -lfl
-rm lex.yy.c
+#rm lex.yy.c
