@@ -9,7 +9,7 @@ void yyerror(char*);
 %%
 program:	program expr '\n'{ printf ("PROG: %d\n", $2); }
 	| ;
-expr:		INTEGER { $$ = $1;}
+expr:		INTEGER { printf("INT: %d\n", $1); $$ = $1;}
 	|	expr '+' expr { $$ = $1 + $3;}
 	|	expr '-' expr { $$ = $1 - $3;};
 %%
