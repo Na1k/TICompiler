@@ -7,7 +7,7 @@
         /*
          * TODO Create dictionary for Variable name & content transfer to yacc
          */
-        extern test;
+        extern int test;
 %}
 		
 %%
@@ -22,7 +22,7 @@
  */
 
 ";"			return MISC_SEMI;
-"int"			{return TYPE_INT; printf("INT");};
+"int"			return TYPE_INT;
 "char"                  return TYPE_CHAR;
 "bool"                  return TYPE_BOOL;
 
@@ -50,43 +50,27 @@
 ">="                    return COMP_GE;
 
 0			return LIT_ZERO;
-[-+\n]			return *yytext; /* TODO HACK */
-[-]?[1-9][0-9]*		{yylval = atoi(yytext); test = 55; return LIT_INT;}
+[-]?[1-9][0-9]*		{yylval = atoi(yytext); return LIT_INT;}
 "'"[a-zA-Z_ ]?"'"       return LIT_CHAR;
 "TRUE"                  return LIT_BOOL;
 "FALSE"                 return LIT_BOOL;
 
 [a-z][a-zA-Z0-9_-]*	{
-                                if(yyleng > 49){my_return("ERROR_TOKENLEN");}
-                                char str[50];
-                                sprintf(str, "VAR_%s", yytext);
+                                printf("VAR: %s", yytext);
                                 return VAR;
 			}
-"("			{printf("LP");return MISC_LP;};
+"("			{printf("LP ");return MISC_LP;}
 ")"			return MISC_RP;
-";"                     return MISC_SEMI;
 
 \n			{
-				printf("\n");
+				printf("Zeilenumbruch \n");
 				yylineno++;
 			}
 [ \t]			;
 "//".*\n                 printf("COMMENT\n");
 
 .			{
-                                if(yyleng > 49){my_return("ERROR_TOKENLEN");}
-                                char str[50];
-                                sprintf(str, "ERROR: %s", yytext);
-                                my_return(str);
+                                printf("MATCH-ANY: %s", yytext);
                         }
 
 %%
-
-
-
-int my_return(int token)
-{
-	//printf("\nZeile %d : ", yylineno);
-        printf("MYRETURN %d\n", token);
-	return token;
-}

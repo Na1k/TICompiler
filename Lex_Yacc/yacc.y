@@ -60,7 +60,7 @@ int test = 0;
  */
 
 %%
-program:	program expr '\n'{ printf ("PROG: %d\n", $2); }
+program:	program expr { printf ("PROG: %d\n", $2); }
         | ;
 
 expr:		LIT_INT { printf("INT: %d\n", $1); $$ = $1;}
@@ -68,7 +68,9 @@ expr:		LIT_INT { printf("INT: %d\n", $1); $$ = $1;}
                        printf("%d \n", yylval);
                      }
         |	expr '+' expr { printf("EXPR: %d + %d\n", $1, $3); $$ = $1 + $3;}
-        |	expr '-' expr { printf("EXPR: %d - %d\n", $1, $3);$$ = $1 - $3;};
+        |	expr '-' expr { printf("EXPR: %d - %d\n", $1, $3);$$ = $1 - $3;}
+        |       MISC_LP { printf("Linke Klammer, YACC"); }
+        | ; 
 
 %%
 
