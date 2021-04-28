@@ -2,24 +2,14 @@
 %{
 	#include<stdio.h>
 	#include "y.tab.h"
-	int yylineno;
 
         /*
          * TODO Create dictionary for Variable name & content transfer to yacc
          */
-        extern int test;
+        extern int lineno;
 %}
 		
 %%
-
- /*
- * TODO swap my_return for specific return based on type
- *
- */
-
- /*
- * TODO More matches
- */
 
 ";"			return MISC_SEMI;
 "int"			return TYPE_INT;
@@ -50,27 +40,24 @@
 ">="                    return COMP_GE;
 
 0			return LIT_ZERO;
-[-]?[1-9][0-9]*		{yylval = atoi(yytext); return LIT_INT;}
+[-]?[1-9][0-9]*		return LIT_INT;
 "'"[a-zA-Z_ ]?"'"       return LIT_CHAR;
 "TRUE"                  return LIT_BOOL;
 "FALSE"                 return LIT_BOOL;
 
-[a-z][a-zA-Z0-9_-]*	{
-                                printf("VAR: %s", yytext);
-                                return VAR;
-			}
-"("			{printf("LP ");return MISC_LP;}
+[a-z][a-zA-Z0-9_-]*	return VAR;
+			
+"("			return MISC_LP;
 ")"			return MISC_RP;
 
 \n			{
-				printf("Zeilenumbruch \n");
-				yylineno++;
+				lineno++;
 			}
 [ \t]			;
 "//".*\n                 printf("COMMENT\n");
 
 .			{
-                                printf("MATCH-ANY: %s", yytext);
+                                return ERROR;
                         }
 
 %%

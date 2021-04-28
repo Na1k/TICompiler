@@ -1,17 +1,12 @@
 %{
 #include <stdio.h>
-yylex(void);
+int yylex(void);
 void yyerror(char*);
 /*
  * TODO Create dictionary for Variable name & content transfer to yacc
  */
-int test = 0;
+int lineno = 1;
 %}
-
-/*
- * TODO add more tokens
- */
-
 
 %token OP_ADD
 %token OP_SUB
@@ -52,6 +47,8 @@ int test = 0;
 %token MISC_RP
 %token MISC_SEMI
 
+%token ERROR
+
 /*
  * Grammar Tree:
  *
@@ -60,21 +57,37 @@ int test = 0;
  */
 
 %%
-program:	program expr { printf ("PROG: %d\n", $2); }
+program:	program declaration { printf (" -PROG DECLARATION- \n"); }
+        |       program assignment { printf (" -PROG ASSIGN- \n"); }
         | ;
 
-expr:		LIT_INT { printf("INT: %d\n", $1); $$ = $1;}
-        |       LIT_ZERO {printf("LIT_ZERO: %d\n", $1); $$ = $1; /* TODO Where does the ZERO go? */
-                       printf("%d \n", yylval);
-                     }
-        |	expr '+' expr { printf("EXPR: %d + %d\n", $1, $3); $$ = $1 + $3;}
-        |	expr '-' expr { printf("EXPR: %d - %d\n", $1, $3);$$ = $1 - $3;}
-        |       MISC_LP { printf("Linke Klammer, YACC"); }
-        | ; 
+declaration:    type VAR MISC_SEMI    
+        |       type assignment;
+
+assignment:     VAR ASSIGN expr MISC_SEMI;
+
+type:           TYPE_INT
+        |       TYPE_CHAR
+        |       TYPE_BOOL;
+
+expr:           MISC_LP expr MISC_RP
+        |       expr operator expr
+        |       number
+        |       VAR;
+
+number:         LIT_INT
+        |       LIT_ZERO;
+
+operator:       OP_ADD
+        |       OP_SUB
+        |       OP_MUL
+        |       OP_DIV
+        |       OP_POT
+        |       OP_MOD;
 
 %%
 
-void yyerror (char *s) { fprintf(stderr, "YYERR: %s\n", s); }
+void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
 int main(void) { 
 	yyparse();
 	return 0;

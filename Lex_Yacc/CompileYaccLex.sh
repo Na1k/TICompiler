@@ -5,7 +5,7 @@ if [ "$#" -ne 3 ]; then
     exit
 fi
 
-yacc -d $1
+yacc -vd $1
 lex $2
 gcc -c y.tab.c
 gcc -c lex.yy.c
