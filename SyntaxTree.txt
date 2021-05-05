@@ -1,0 +1,1 @@
+[Program [Declaration [Typ [TYPE_Int][TYPE_CHAR] [TYPE_BOOL]] [VAR] [MISC_SEMI]][Assignment [VAR] [Assign] [expr ["MISC_LP expr MISC_RP"] ["expr operator expr" [OP_ADD] [OP_SUB][OP_MUL][OP_DIV][OP_POT][OP_MOD]] [number [LIT_INT] [LIT_ZERO]]] [MISC_SEMI] ]]
