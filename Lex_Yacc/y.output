@@ -1,5 +1,6 @@
 Terminals unused in grammar
 
+    LOGIC_NOT
     LIT_CHAR
     CTRL_IF
     CTRL_THEN
@@ -64,6 +65,8 @@ Grammar
    35              | COMP_LE
    36              | COMP_GT
    37              | COMP_GE
+   38              | LOGIC_AND
+   39              | LOGIC_OR
 
 
 Terminals, with rules where they appear
@@ -82,69 +85,72 @@ Terminals, with rules where they appear
     COMP_LE (267) 35
     COMP_GT (268) 36
     COMP_GE (269) 37
-    VAR (270) 5 7 17 30
-    TYPE_INT (271) 8
-    TYPE_CHAR (272) 9
-    TYPE_BOOL (273) 10
-    LIT_INT (274) 18 20
-    LIT_BOOL (275) 32
-    LIT_CHAR (276)
-    LIT_ZERO (277) 19
-    CTRL_IF (278)
-    CTRL_THEN (279)
-    CTRL_ELSE (280)
-    CTRL_ELIF (281)
-    CTRL_END (282)
-    CTRL_WHILE (283)
-    CTRL_DO (284)
-    MISC_LP (285) 15 29
-    MISC_RP (286) 15 29
-    MISC_SEMI (287) 5 7
-    ERROR (288)
+    LOGIC_AND (270) 38
+    LOGIC_OR (271) 39
+    LOGIC_NOT (272)
+    VAR (273) 5 7 17 30
+    TYPE_INT (274) 8
+    TYPE_CHAR (275) 9
+    TYPE_BOOL (276) 10
+    LIT_INT (277) 18 20
+    LIT_BOOL (278) 32
+    LIT_CHAR (279)
+    LIT_ZERO (280) 19
+    CTRL_IF (281)
+    CTRL_THEN (282)
+    CTRL_ELSE (283)
+    CTRL_ELIF (284)
+    CTRL_END (285)
+    CTRL_WHILE (286)
+    CTRL_DO (287)
+    MISC_LP (288) 15 29
+    MISC_RP (289) 15 29
+    MISC_SEMI (290) 5 7
+    ERROR (291)
 
 
 Nonterminals, with rules where they appear
 
-    $accept (34)
+    $accept (37)
         on left: 0
-    program (35)
+    program (38)
         on left: 1 2 3 4
         on right: 0 1 2 3
-    declaration (36)
+    declaration (39)
         on left: 5 6
         on right: 1
-    assignment (37)
+    assignment (40)
         on left: 7
         on right: 2 6
-    type (38)
+    type (41)
         on left: 8 9 10
         on right: 5 6
-    expr (39)
+    expr (42)
         on left: 11 12
         on right: 7 11 15
-    term (40)
+    term (43)
         on left: 13 14
         on right: 11 12 13
-    factor (41)
+    factor (44)
         on left: 15 16 17
         on right: 13 14
-    number (42)
+    number (45)
         on left: 18 19 20
         on right: 16 31
-    lineOperator (43)
+    lineOperator (46)
         on left: 21 22
         on right: 11
-    pointOperator (44)
+    pointOperator (47)
         on left: 23 24 25 26
         on right: 13
-    logicExpr (45)
+    logicExpr (48)
         on left: 27 28
         on right: 3 27 29
-    logicTerm (46)
+    logicTerm (49)
         on left: 29 30 31 32
         on right: 27 28
-    logicOperator (47)
-        on left: 33 34 35 36 37
+    logicOperator (50)
+        on left: 33 34 35 36 37 38 39
         on right: 27
 
 
@@ -301,15 +307,17 @@ State 16
     3 program: program logicExpr .
    27 logicExpr: logicExpr . logicOperator logicTerm
 
-    COMP_EQL  shift, and go to state 24
-    COMP_LT   shift, and go to state 25
-    COMP_LE   shift, and go to state 26
-    COMP_GT   shift, and go to state 27
-    COMP_GE   shift, and go to state 28
+    COMP_EQL   shift, and go to state 24
+    COMP_LT    shift, and go to state 25
+    COMP_LE    shift, and go to state 26
+    COMP_GT    shift, and go to state 27
+    COMP_GE    shift, and go to state 28
+    LOGIC_AND  shift, and go to state 29
+    LOGIC_OR   shift, and go to state 30
 
     $default  reduce using rule 3 (program)
 
-    logicOperator  go to state 29
+    logicOperator  go to state 31
 
 
 State 17
@@ -331,15 +339,15 @@ State 19
     7 assignment: VAR ASSIGN . expr MISC_SEMI
 
     OP_SUB    shift, and go to state 3
-    VAR       shift, and go to state 30
+    VAR       shift, and go to state 32
     LIT_INT   shift, and go to state 8
     LIT_ZERO  shift, and go to state 10
-    MISC_LP   shift, and go to state 31
+    MISC_LP   shift, and go to state 33
 
-    expr    go to state 32
-    term    go to state 33
-    factor  go to state 34
-    number  go to state 35
+    expr    go to state 34
+    term    go to state 35
+    factor  go to state 36
+    number  go to state 37
 
 
 State 20
@@ -354,14 +362,16 @@ State 21
    27 logicExpr: logicExpr . logicOperator logicTerm
    29 logicTerm: MISC_LP logicExpr . MISC_RP
 
-    COMP_EQL  shift, and go to state 24
-    COMP_LT   shift, and go to state 25
-    COMP_LE   shift, and go to state 26
-    COMP_GT   shift, and go to state 27
-    COMP_GE   shift, and go to state 28
-    MISC_RP   shift, and go to state 36
+    COMP_EQL   shift, and go to state 24
+    COMP_LT    shift, and go to state 25
+    COMP_LE    shift, and go to state 26
+    COMP_GT    shift, and go to state 27
+    COMP_GE    shift, and go to state 28
+    LOGIC_AND  shift, and go to state 29
+    LOGIC_OR   shift, and go to state 30
+    MISC_RP    shift, and go to state 38
 
-    logicOperator  go to state 29
+    logicOperator  go to state 31
 
 
 State 22
@@ -370,7 +380,7 @@ State 22
     7 assignment: VAR . ASSIGN expr MISC_SEMI
 
     ASSIGN     shift, and go to state 19
-    MISC_SEMI  shift, and go to state 37
+    MISC_SEMI  shift, and go to state 39
 
 
 State 23
@@ -417,6 +427,20 @@ State 28
 
 State 29
 
+   38 logicOperator: LOGIC_AND .
+
+    $default  reduce using rule 38 (logicOperator)
+
+
+State 30
+
+   39 logicOperator: LOGIC_OR .
+
+    $default  reduce using rule 39 (logicOperator)
+
+
+State 31
+
    27 logicExpr: logicExpr logicOperator . logicTerm
 
     OP_SUB    shift, and go to state 3
@@ -427,207 +451,207 @@ State 29
     MISC_LP   shift, and go to state 11
 
     number     go to state 15
-    logicTerm  go to state 38
+    logicTerm  go to state 40
 
 
-State 30
+State 32
 
    17 factor: VAR .
 
     $default  reduce using rule 17 (factor)
 
 
-State 31
+State 33
 
    15 factor: MISC_LP . expr MISC_RP
 
     OP_SUB    shift, and go to state 3
-    VAR       shift, and go to state 30
+    VAR       shift, and go to state 32
     LIT_INT   shift, and go to state 8
     LIT_ZERO  shift, and go to state 10
-    MISC_LP   shift, and go to state 31
+    MISC_LP   shift, and go to state 33
 
-    expr    go to state 39
-    term    go to state 33
-    factor  go to state 34
-    number  go to state 35
+    expr    go to state 41
+    term    go to state 35
+    factor  go to state 36
+    number  go to state 37
 
 
-State 32
+State 34
 
     7 assignment: VAR ASSIGN expr . MISC_SEMI
    11 expr: expr . lineOperator term
 
-    OP_ADD     shift, and go to state 40
-    OP_SUB     shift, and go to state 41
-    MISC_SEMI  shift, and go to state 42
+    OP_ADD     shift, and go to state 42
+    OP_SUB     shift, and go to state 43
+    MISC_SEMI  shift, and go to state 44
 
-    lineOperator  go to state 43
+    lineOperator  go to state 45
 
 
-State 33
+State 35
 
    12 expr: term .
    13 term: term . pointOperator factor
 
-    OP_MUL  shift, and go to state 44
-    OP_DIV  shift, and go to state 45
-    OP_POT  shift, and go to state 46
-    OP_MOD  shift, and go to state 47
+    OP_MUL  shift, and go to state 46
+    OP_DIV  shift, and go to state 47
+    OP_POT  shift, and go to state 48
+    OP_MOD  shift, and go to state 49
 
     $default  reduce using rule 12 (expr)
 
-    pointOperator  go to state 48
+    pointOperator  go to state 50
 
 
-State 34
+State 36
 
    14 term: factor .
 
     $default  reduce using rule 14 (term)
 
 
-State 35
+State 37
 
    16 factor: number .
 
     $default  reduce using rule 16 (factor)
 
 
-State 36
+State 38
 
    29 logicTerm: MISC_LP logicExpr MISC_RP .
 
     $default  reduce using rule 29 (logicTerm)
 
 
-State 37
+State 39
 
     5 declaration: type VAR MISC_SEMI .
 
     $default  reduce using rule 5 (declaration)
 
 
-State 38
+State 40
 
    27 logicExpr: logicExpr logicOperator logicTerm .
 
     $default  reduce using rule 27 (logicExpr)
 
 
-State 39
+State 41
 
    11 expr: expr . lineOperator term
    15 factor: MISC_LP expr . MISC_RP
 
-    OP_ADD   shift, and go to state 40
-    OP_SUB   shift, and go to state 41
-    MISC_RP  shift, and go to state 49
+    OP_ADD   shift, and go to state 42
+    OP_SUB   shift, and go to state 43
+    MISC_RP  shift, and go to state 51
 
-    lineOperator  go to state 43
+    lineOperator  go to state 45
 
 
-State 40
+State 42
 
    21 lineOperator: OP_ADD .
 
     $default  reduce using rule 21 (lineOperator)
 
 
-State 41
+State 43
 
    22 lineOperator: OP_SUB .
 
     $default  reduce using rule 22 (lineOperator)
 
 
-State 42
+State 44
 
     7 assignment: VAR ASSIGN expr MISC_SEMI .
 
     $default  reduce using rule 7 (assignment)
 
 
-State 43
+State 45
 
    11 expr: expr lineOperator . term
 
     OP_SUB    shift, and go to state 3
-    VAR       shift, and go to state 30
+    VAR       shift, and go to state 32
     LIT_INT   shift, and go to state 8
     LIT_ZERO  shift, and go to state 10
-    MISC_LP   shift, and go to state 31
+    MISC_LP   shift, and go to state 33
 
-    term    go to state 50
-    factor  go to state 34
-    number  go to state 35
+    term    go to state 52
+    factor  go to state 36
+    number  go to state 37
 
 
-State 44
+State 46
 
    23 pointOperator: OP_MUL .
 
     $default  reduce using rule 23 (pointOperator)
 
 
-State 45
+State 47
 
    24 pointOperator: OP_DIV .
 
     $default  reduce using rule 24 (pointOperator)
 
 
-State 46
+State 48
 
    25 pointOperator: OP_POT .
 
     $default  reduce using rule 25 (pointOperator)
 
 
-State 47
+State 49
 
    26 pointOperator: OP_MOD .
 
     $default  reduce using rule 26 (pointOperator)
 
 
-State 48
+State 50
 
    13 term: term pointOperator . factor
 
     OP_SUB    shift, and go to state 3
-    VAR       shift, and go to state 30
+    VAR       shift, and go to state 32
     LIT_INT   shift, and go to state 8
     LIT_ZERO  shift, and go to state 10
-    MISC_LP   shift, and go to state 31
+    MISC_LP   shift, and go to state 33
 
-    factor  go to state 51
-    number  go to state 35
+    factor  go to state 53
+    number  go to state 37
 
 
-State 49
+State 51
 
    15 factor: MISC_LP expr MISC_RP .
 
     $default  reduce using rule 15 (factor)
 
 
-State 50
+State 52
 
    11 expr: expr lineOperator term .
    13 term: term . pointOperator factor
 
-    OP_MUL  shift, and go to state 44
-    OP_DIV  shift, and go to state 45
-    OP_POT  shift, and go to state 46
-    OP_MOD  shift, and go to state 47
+    OP_MUL  shift, and go to state 46
+    OP_DIV  shift, and go to state 47
+    OP_POT  shift, and go to state 48
+    OP_MOD  shift, and go to state 49
 
     $default  reduce using rule 11 (expr)
 
-    pointOperator  go to state 48
+    pointOperator  go to state 50
 
 
-State 51
+State 53
 
    13 term: term pointOperator factor .
 

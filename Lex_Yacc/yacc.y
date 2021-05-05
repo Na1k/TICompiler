@@ -24,6 +24,10 @@ int lineno = 1;
 %token COMP_GT  /* >  */
 %token COMP_GE  /* >= */
 
+%token LOGIC_AND  /* & */
+%token LOGIC_OR  /* | */
+%token LOGIC_NOT  /* ! */
+
 %token VAR
 
 %token TYPE_INT 
@@ -63,7 +67,8 @@ program:	program declaration { printf (" -PROG DECLARATION- \n"); }
 declaration:    type VAR MISC_SEMI    
         |       type assignment;
 
-assignment:     VAR ASSIGN expr MISC_SEMI;
+assignment:     VAR ASSIGN expr MISC_SEMI
+        /*|       VAR ASSIGN logicExpr MISC_SEMI*/;
 
 type:           TYPE_INT
         |       TYPE_CHAR
@@ -103,7 +108,12 @@ logicOperator:  COMP_EQL
         |       COMP_LT
         |       COMP_LE
         |       COMP_GT
-        |       COMP_GE;
+        |       COMP_GE
+
+        |       LOGIC_AND
+        |       LOGIC_OR;
+
+/* if / while / control-structures */
 
 %%
 

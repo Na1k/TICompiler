@@ -39,6 +39,12 @@
 ">"                     return COMP_GT;
 ">="                    return COMP_GE;
 
+"&"                     return LOGIC_AND;
+"|"                     return LOGIC_OR;
+"!"                     return LOGIC_NOT;
+
+ /* XOR */
+
 0			return LIT_ZERO;
 [1-9][0-9]*		return LIT_INT;
 "'"[a-zA-Z_ ]?"'"       return LIT_CHAR;
