@@ -2,6 +2,7 @@
 #include <stdio.h>
 int yylex(void);
 void yyerror(char*);
+
 /*
  * TODO Create dictionary for Variable name & content transfer to yacc
  */
@@ -50,10 +51,7 @@ int lineno = 1;
 %token ERROR
 
 /*
- * Grammar Tree:
- *
- * Programm
- * |- expr
+ * Declare Syntax
  */
 
 %%
@@ -70,17 +68,24 @@ type:           TYPE_INT
         |       TYPE_CHAR
         |       TYPE_BOOL;
 
-expr:           MISC_LP expr MISC_RP
-        |       expr operator expr
+expr:           expr lineOperator term
+        |       term;
+
+term:           term pointOperator factor
+        |       factor;
+
+factor:         MISC_LP expr MISC_RP
         |       number
         |       VAR;
 
 number:         LIT_INT
-        |       LIT_ZERO;
+        |       LIT_ZERO
+        |       OP_SUB LIT_INT;         /* negative number */
 
-operator:       OP_ADD
-        |       OP_SUB
-        |       OP_MUL
+lineOperator:   OP_ADD
+        |       OP_SUB;      
+        
+pointOperator:  OP_MUL
         |       OP_DIV
         |       OP_POT
         |       OP_MOD;

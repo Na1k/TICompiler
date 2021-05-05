@@ -40,7 +40,7 @@
 ">="                    return COMP_GE;
 
 0			return LIT_ZERO;
-[-]?[1-9][0-9]*		return LIT_INT;
+[1-9][0-9]*		return LIT_INT;
 "'"[a-zA-Z_ ]?"'"       return LIT_CHAR;
 "TRUE"                  return LIT_BOOL;
 "FALSE"                 return LIT_BOOL;
