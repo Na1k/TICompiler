@@ -1,2 +1,10 @@
-x=(TRUE);
-
+if (x<3) 
+then 
+	y=4+3; 
+	z=6-2; 
+elif (x>3)
+then
+	a=3-3;
+else
+	z=FALSE;
+end

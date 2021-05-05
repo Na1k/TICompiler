@@ -62,6 +62,7 @@ int lineno = 1;
 %%
 program:	program declaration { printf (" -PROG DECLARATION- \n"); }
         |       program assignment { printf (" -PROG ASSIGN- \n"); }
+        |       program controlBlock { printf (" -PROG CTRL- \n"); }
         | ;
 
 declaration:    type VAR MISC_SEMI    
@@ -98,14 +99,6 @@ pointOperator:  OP_MUL
         |       OP_DIV
         |       OP_POT
         |       OP_MOD;
-/*
-logicExpr:      logicExpr logicOperator logicTerm
-        |       logicTerm;
-
-logicTerm:      MISC_LP logicExpr MISC_RP
-        |       VAR 
-        |       number
-        |       LIT_BOOL;*/
 
 logicOperator:  COMP_EQL
         |       COMP_LT
@@ -117,6 +110,12 @@ logicOperator:  COMP_EQL
         |       LOGIC_OR;
 
 /* if / while / control-structures */
+
+controlBlock:   CTRL_IF expr CTRL_THEN program controlElif CTRL_END
+        |       CTRL_IF expr CTRL_THEN program controlElif CTRL_ELSE program CTRL_END;
+
+controlElif:   CTRL_ELIF expr CTRL_THEN program controlElif
+        |;
 
 %%
 

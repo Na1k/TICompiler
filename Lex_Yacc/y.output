@@ -2,11 +2,6 @@ Terminals unused in grammar
 
     LOGIC_NOT
     LIT_CHAR
-    CTRL_IF
-    CTRL_THEN
-    CTRL_ELSE
-    CTRL_ELIF
-    CTRL_END
     CTRL_WHILE
     CTRL_DO
     ERROR
@@ -18,89 +13,96 @@ Grammar
 
     1 program: program declaration
     2        | program assignment
-    3        | %empty
+    3        | program controlBlock
+    4        | %empty
 
-    4 declaration: type VAR MISC_SEMI
-    5            | type assignment
+    5 declaration: type VAR MISC_SEMI
+    6            | type assignment
 
-    6 assignment: VAR ASSIGN expr MISC_SEMI
+    7 assignment: VAR ASSIGN expr MISC_SEMI
 
-    7 type: TYPE_INT
-    8     | TYPE_CHAR
-    9     | TYPE_BOOL
+    8 type: TYPE_INT
+    9     | TYPE_CHAR
+   10     | TYPE_BOOL
 
-   10 expr: expr lineOperator term
-   11     | term
+   11 expr: expr lineOperator term
+   12     | term
 
-   12 term: term pointOperator factor
-   13     | factor
+   13 term: term pointOperator factor
+   14     | factor
 
-   14 factor: factor logicOperator literal
-   15       | literal
+   15 factor: factor logicOperator literal
+   16       | literal
 
-   16 literal: MISC_LP expr MISC_RP
-   17        | LIT_BOOL
-   18        | number
-   19        | VAR
+   17 literal: MISC_LP expr MISC_RP
+   18        | LIT_BOOL
+   19        | number
+   20        | VAR
 
-   20 number: LIT_INT
-   21       | LIT_ZERO
-   22       | OP_SUB LIT_INT
+   21 number: LIT_INT
+   22       | LIT_ZERO
+   23       | OP_SUB LIT_INT
 
-   23 lineOperator: OP_ADD
-   24             | OP_SUB
+   24 lineOperator: OP_ADD
+   25             | OP_SUB
 
-   25 pointOperator: OP_MUL
-   26              | OP_DIV
-   27              | OP_POT
-   28              | OP_MOD
+   26 pointOperator: OP_MUL
+   27              | OP_DIV
+   28              | OP_POT
+   29              | OP_MOD
 
-   29 logicOperator: COMP_EQL
-   30              | COMP_LT
-   31              | COMP_LE
-   32              | COMP_GT
-   33              | COMP_GE
-   34              | LOGIC_AND
-   35              | LOGIC_OR
+   30 logicOperator: COMP_EQL
+   31              | COMP_LT
+   32              | COMP_LE
+   33              | COMP_GT
+   34              | COMP_GE
+   35              | LOGIC_AND
+   36              | LOGIC_OR
+
+   37 controlBlock: CTRL_IF expr CTRL_THEN program controlElif CTRL_END
+   38             | CTRL_IF expr CTRL_THEN program controlElif CTRL_ELSE program CTRL_END
+
+   39 controlElif: CTRL_ELIF expr CTRL_THEN program controlElif
+   40            | %empty
 
 
 Terminals, with rules where they appear
 
     $end (0) 0
     error (256)
-    OP_ADD (258) 23
-    OP_SUB (259) 22 24
-    OP_MUL (260) 25
-    OP_DIV (261) 26
-    OP_POT (262) 27
-    OP_MOD (263) 28
-    ASSIGN (264) 6
-    COMP_EQL (265) 29
-    COMP_LT (266) 30
-    COMP_LE (267) 31
-    COMP_GT (268) 32
-    COMP_GE (269) 33
-    LOGIC_AND (270) 34
-    LOGIC_OR (271) 35
+    OP_ADD (258) 24
+    OP_SUB (259) 23 25
+    OP_MUL (260) 26
+    OP_DIV (261) 27
+    OP_POT (262) 28
+    OP_MOD (263) 29
+    ASSIGN (264) 7
+    COMP_EQL (265) 30
+    COMP_LT (266) 31
+    COMP_LE (267) 32
+    COMP_GT (268) 33
+    COMP_GE (269) 34
+    LOGIC_AND (270) 35
+    LOGIC_OR (271) 36
     LOGIC_NOT (272)
-    VAR (273) 4 6 19
-    TYPE_INT (274) 7
-    TYPE_CHAR (275) 8
-    TYPE_BOOL (276) 9
-    LIT_INT (277) 20 22
-    LIT_BOOL (278) 17
+    VAR (273) 5 7 20
+    TYPE_INT (274) 8
+    TYPE_CHAR (275) 9
+    TYPE_BOOL (276) 10
+    LIT_INT (277) 21 23
+    LIT_BOOL (278) 18
     LIT_CHAR (279)
-    LIT_ZERO (280) 21
-    CTRL_IF (281)
-    CTRL_THEN (282)
-    CTRL_ELSE (283)
-    CTRL_ELIF (284)
-    CTRL_END (285)
+    LIT_ZERO (280) 22
+    CTRL_IF (281) 37 38
+    CTRL_THEN (282) 37 38 39
+    CTRL_ELSE (283) 38
+    CTRL_ELIF (284) 39
+    CTRL_END (285) 37 38
     CTRL_WHILE (286)
     CTRL_DO (287)
-    MISC_LP (288) 16
-    MISC_RP (289) 16
-    MISC_SEMI (290) 4 6
+    MISC_LP (288) 17
+    MISC_RP (289) 17
+    MISC_SEMI (290) 5 7
     ERROR (291)
 
 
@@ -109,48 +111,54 @@ Nonterminals, with rules where they appear
     $accept (37)
         on left: 0
     program (38)
-        on left: 1 2 3
-        on right: 0 1 2
+        on left: 1 2 3 4
+        on right: 0 1 2 3 37 38 39
     declaration (39)
-        on left: 4 5
+        on left: 5 6
         on right: 1
     assignment (40)
-        on left: 6
-        on right: 2 5
+        on left: 7
+        on right: 2 6
     type (41)
-        on left: 7 8 9
-        on right: 4 5
+        on left: 8 9 10
+        on right: 5 6
     expr (42)
-        on left: 10 11
-        on right: 6 10 16
+        on left: 11 12
+        on right: 7 11 17 37 38 39
     term (43)
-        on left: 12 13
-        on right: 10 11 12
+        on left: 13 14
+        on right: 11 12 13
     factor (44)
-        on left: 14 15
-        on right: 12 13 14
+        on left: 15 16
+        on right: 13 14 15
     literal (45)
-        on left: 16 17 18 19
-        on right: 14 15
+        on left: 17 18 19 20
+        on right: 15 16
     number (46)
-        on left: 20 21 22
-        on right: 18
+        on left: 21 22 23
+        on right: 19
     lineOperator (47)
-        on left: 23 24
-        on right: 10
+        on left: 24 25
+        on right: 11
     pointOperator (48)
-        on left: 25 26 27 28
-        on right: 12
+        on left: 26 27 28 29
+        on right: 13
     logicOperator (49)
-        on left: 29 30 31 32 33 34 35
-        on right: 14
+        on left: 30 31 32 33 34 35 36
+        on right: 15
+    controlBlock (50)
+        on left: 37 38
+        on right: 3
+    controlElif (51)
+        on left: 39 40
+        on right: 37 38 39
 
 
 State 0
 
     0 $accept: . program $end
 
-    $default  reduce using rule 3 (program)
+    $default  reduce using rule 4 (program)
 
     program  go to state 1
 
@@ -160,16 +168,19 @@ State 1
     0 $accept: program . $end
     1 program: program . declaration
     2        | program . assignment
+    3        | program . controlBlock
 
     $end       shift, and go to state 2
     VAR        shift, and go to state 3
     TYPE_INT   shift, and go to state 4
     TYPE_CHAR  shift, and go to state 5
     TYPE_BOOL  shift, and go to state 6
+    CTRL_IF    shift, and go to state 7
 
-    declaration  go to state 7
-    assignment   go to state 8
-    type         go to state 9
+    declaration   go to state 8
+    assignment    go to state 9
+    type          go to state 10
+    controlBlock  go to state 11
 
 
 State 2
@@ -181,59 +192,36 @@ State 2
 
 State 3
 
-    6 assignment: VAR . ASSIGN expr MISC_SEMI
+    7 assignment: VAR . ASSIGN expr MISC_SEMI
 
-    ASSIGN  shift, and go to state 10
+    ASSIGN  shift, and go to state 12
 
 
 State 4
 
-    7 type: TYPE_INT .
-
-    $default  reduce using rule 7 (type)
-
-
-State 5
-
-    8 type: TYPE_CHAR .
+    8 type: TYPE_INT .
 
     $default  reduce using rule 8 (type)
 
 
-State 6
+State 5
 
-    9 type: TYPE_BOOL .
+    9 type: TYPE_CHAR .
 
     $default  reduce using rule 9 (type)
 
 
+State 6
+
+   10 type: TYPE_BOOL .
+
+    $default  reduce using rule 10 (type)
+
+
 State 7
 
-    1 program: program declaration .
-
-    $default  reduce using rule 1 (program)
-
-
-State 8
-
-    2 program: program assignment .
-
-    $default  reduce using rule 2 (program)
-
-
-State 9
-
-    4 declaration: type . VAR MISC_SEMI
-    5            | type . assignment
-
-    VAR  shift, and go to state 11
-
-    assignment  go to state 12
-
-
-State 10
-
-    6 assignment: VAR ASSIGN . expr MISC_SEMI
+   37 controlBlock: CTRL_IF . expr CTRL_THEN program controlElif CTRL_END
+   38             | CTRL_IF . expr CTRL_THEN program controlElif CTRL_ELSE program CTRL_END
 
     OP_SUB    shift, and go to state 13
     VAR       shift, and go to state 14
@@ -249,60 +237,40 @@ State 10
     number   go to state 23
 
 
+State 8
+
+    1 program: program declaration .
+
+    $default  reduce using rule 1 (program)
+
+
+State 9
+
+    2 program: program assignment .
+
+    $default  reduce using rule 2 (program)
+
+
+State 10
+
+    5 declaration: type . VAR MISC_SEMI
+    6            | type . assignment
+
+    VAR  shift, and go to state 24
+
+    assignment  go to state 25
+
+
 State 11
 
-    4 declaration: type VAR . MISC_SEMI
-    6 assignment: VAR . ASSIGN expr MISC_SEMI
+    3 program: program controlBlock .
 
-    ASSIGN     shift, and go to state 10
-    MISC_SEMI  shift, and go to state 24
+    $default  reduce using rule 3 (program)
 
 
 State 12
 
-    5 declaration: type assignment .
-
-    $default  reduce using rule 5 (declaration)
-
-
-State 13
-
-   22 number: OP_SUB . LIT_INT
-
-    LIT_INT  shift, and go to state 25
-
-
-State 14
-
-   19 literal: VAR .
-
-    $default  reduce using rule 19 (literal)
-
-
-State 15
-
-   20 number: LIT_INT .
-
-    $default  reduce using rule 20 (number)
-
-
-State 16
-
-   17 literal: LIT_BOOL .
-
-    $default  reduce using rule 17 (literal)
-
-
-State 17
-
-   21 number: LIT_ZERO .
-
-    $default  reduce using rule 21 (number)
-
-
-State 18
-
-   16 literal: MISC_LP . expr MISC_RP
+    7 assignment: VAR ASSIGN . expr MISC_SEMI
 
     OP_SUB    shift, and go to state 13
     VAR       shift, and go to state 14
@@ -318,115 +286,44 @@ State 18
     number   go to state 23
 
 
-State 19
+State 13
 
-    6 assignment: VAR ASSIGN expr . MISC_SEMI
-   10 expr: expr . lineOperator term
+   23 number: OP_SUB . LIT_INT
 
-    OP_ADD     shift, and go to state 27
-    OP_SUB     shift, and go to state 28
-    MISC_SEMI  shift, and go to state 29
-
-    lineOperator  go to state 30
+    LIT_INT  shift, and go to state 27
 
 
-State 20
+State 14
 
-   11 expr: term .
-   12 term: term . pointOperator factor
+   20 literal: VAR .
 
-    OP_MUL  shift, and go to state 31
-    OP_DIV  shift, and go to state 32
-    OP_POT  shift, and go to state 33
-    OP_MOD  shift, and go to state 34
-
-    $default  reduce using rule 11 (expr)
-
-    pointOperator  go to state 35
+    $default  reduce using rule 20 (literal)
 
 
-State 21
+State 15
 
-   13 term: factor .
-   14 factor: factor . logicOperator literal
+   21 number: LIT_INT .
 
-    COMP_EQL   shift, and go to state 36
-    COMP_LT    shift, and go to state 37
-    COMP_LE    shift, and go to state 38
-    COMP_GT    shift, and go to state 39
-    COMP_GE    shift, and go to state 40
-    LOGIC_AND  shift, and go to state 41
-    LOGIC_OR   shift, and go to state 42
-
-    $default  reduce using rule 13 (term)
-
-    logicOperator  go to state 43
+    $default  reduce using rule 21 (number)
 
 
-State 22
+State 16
 
-   15 factor: literal .
-
-    $default  reduce using rule 15 (factor)
-
-
-State 23
-
-   18 literal: number .
+   18 literal: LIT_BOOL .
 
     $default  reduce using rule 18 (literal)
 
 
-State 24
+State 17
 
-    4 declaration: type VAR MISC_SEMI .
-
-    $default  reduce using rule 4 (declaration)
-
-
-State 25
-
-   22 number: OP_SUB LIT_INT .
+   22 number: LIT_ZERO .
 
     $default  reduce using rule 22 (number)
 
 
-State 26
+State 18
 
-   10 expr: expr . lineOperator term
-   16 literal: MISC_LP expr . MISC_RP
-
-    OP_ADD   shift, and go to state 27
-    OP_SUB   shift, and go to state 28
-    MISC_RP  shift, and go to state 44
-
-    lineOperator  go to state 30
-
-
-State 27
-
-   23 lineOperator: OP_ADD .
-
-    $default  reduce using rule 23 (lineOperator)
-
-
-State 28
-
-   24 lineOperator: OP_SUB .
-
-    $default  reduce using rule 24 (lineOperator)
-
-
-State 29
-
-    6 assignment: VAR ASSIGN expr MISC_SEMI .
-
-    $default  reduce using rule 6 (assignment)
-
-
-State 30
-
-   10 expr: expr lineOperator . term
+   17 literal: MISC_LP . expr MISC_RP
 
     OP_SUB    shift, and go to state 13
     VAR       shift, and go to state 14
@@ -435,43 +332,147 @@ State 30
     LIT_ZERO  shift, and go to state 17
     MISC_LP   shift, and go to state 18
 
-    term     go to state 45
+    expr     go to state 28
+    term     go to state 20
     factor   go to state 21
     literal  go to state 22
     number   go to state 23
 
 
+State 19
+
+   11 expr: expr . lineOperator term
+   37 controlBlock: CTRL_IF expr . CTRL_THEN program controlElif CTRL_END
+   38             | CTRL_IF expr . CTRL_THEN program controlElif CTRL_ELSE program CTRL_END
+
+    OP_ADD     shift, and go to state 29
+    OP_SUB     shift, and go to state 30
+    CTRL_THEN  shift, and go to state 31
+
+    lineOperator  go to state 32
+
+
+State 20
+
+   12 expr: term .
+   13 term: term . pointOperator factor
+
+    OP_MUL  shift, and go to state 33
+    OP_DIV  shift, and go to state 34
+    OP_POT  shift, and go to state 35
+    OP_MOD  shift, and go to state 36
+
+    $default  reduce using rule 12 (expr)
+
+    pointOperator  go to state 37
+
+
+State 21
+
+   14 term: factor .
+   15 factor: factor . logicOperator literal
+
+    COMP_EQL   shift, and go to state 38
+    COMP_LT    shift, and go to state 39
+    COMP_LE    shift, and go to state 40
+    COMP_GT    shift, and go to state 41
+    COMP_GE    shift, and go to state 42
+    LOGIC_AND  shift, and go to state 43
+    LOGIC_OR   shift, and go to state 44
+
+    $default  reduce using rule 14 (term)
+
+    logicOperator  go to state 45
+
+
+State 22
+
+   16 factor: literal .
+
+    $default  reduce using rule 16 (factor)
+
+
+State 23
+
+   19 literal: number .
+
+    $default  reduce using rule 19 (literal)
+
+
+State 24
+
+    5 declaration: type VAR . MISC_SEMI
+    7 assignment: VAR . ASSIGN expr MISC_SEMI
+
+    ASSIGN     shift, and go to state 12
+    MISC_SEMI  shift, and go to state 46
+
+
+State 25
+
+    6 declaration: type assignment .
+
+    $default  reduce using rule 6 (declaration)
+
+
+State 26
+
+    7 assignment: VAR ASSIGN expr . MISC_SEMI
+   11 expr: expr . lineOperator term
+
+    OP_ADD     shift, and go to state 29
+    OP_SUB     shift, and go to state 30
+    MISC_SEMI  shift, and go to state 47
+
+    lineOperator  go to state 32
+
+
+State 27
+
+   23 number: OP_SUB LIT_INT .
+
+    $default  reduce using rule 23 (number)
+
+
+State 28
+
+   11 expr: expr . lineOperator term
+   17 literal: MISC_LP expr . MISC_RP
+
+    OP_ADD   shift, and go to state 29
+    OP_SUB   shift, and go to state 30
+    MISC_RP  shift, and go to state 48
+
+    lineOperator  go to state 32
+
+
+State 29
+
+   24 lineOperator: OP_ADD .
+
+    $default  reduce using rule 24 (lineOperator)
+
+
+State 30
+
+   25 lineOperator: OP_SUB .
+
+    $default  reduce using rule 25 (lineOperator)
+
+
 State 31
 
-   25 pointOperator: OP_MUL .
+   37 controlBlock: CTRL_IF expr CTRL_THEN . program controlElif CTRL_END
+   38             | CTRL_IF expr CTRL_THEN . program controlElif CTRL_ELSE program CTRL_END
 
-    $default  reduce using rule 25 (pointOperator)
+    $default  reduce using rule 4 (program)
+
+    program  go to state 49
 
 
 State 32
 
-   26 pointOperator: OP_DIV .
-
-    $default  reduce using rule 26 (pointOperator)
-
-
-State 33
-
-   27 pointOperator: OP_POT .
-
-    $default  reduce using rule 27 (pointOperator)
-
-
-State 34
-
-   28 pointOperator: OP_MOD .
-
-    $default  reduce using rule 28 (pointOperator)
-
-
-State 35
-
-   12 term: term pointOperator . factor
+   11 expr: expr lineOperator . term
 
     OP_SUB    shift, and go to state 13
     VAR       shift, and go to state 14
@@ -480,63 +481,43 @@ State 35
     LIT_ZERO  shift, and go to state 17
     MISC_LP   shift, and go to state 18
 
-    factor   go to state 46
+    term     go to state 50
+    factor   go to state 21
     literal  go to state 22
     number   go to state 23
 
 
+State 33
+
+   26 pointOperator: OP_MUL .
+
+    $default  reduce using rule 26 (pointOperator)
+
+
+State 34
+
+   27 pointOperator: OP_DIV .
+
+    $default  reduce using rule 27 (pointOperator)
+
+
+State 35
+
+   28 pointOperator: OP_POT .
+
+    $default  reduce using rule 28 (pointOperator)
+
+
 State 36
 
-   29 logicOperator: COMP_EQL .
+   29 pointOperator: OP_MOD .
 
-    $default  reduce using rule 29 (logicOperator)
+    $default  reduce using rule 29 (pointOperator)
 
 
 State 37
 
-   30 logicOperator: COMP_LT .
-
-    $default  reduce using rule 30 (logicOperator)
-
-
-State 38
-
-   31 logicOperator: COMP_LE .
-
-    $default  reduce using rule 31 (logicOperator)
-
-
-State 39
-
-   32 logicOperator: COMP_GT .
-
-    $default  reduce using rule 32 (logicOperator)
-
-
-State 40
-
-   33 logicOperator: COMP_GE .
-
-    $default  reduce using rule 33 (logicOperator)
-
-
-State 41
-
-   34 logicOperator: LOGIC_AND .
-
-    $default  reduce using rule 34 (logicOperator)
-
-
-State 42
-
-   35 logicOperator: LOGIC_OR .
-
-    $default  reduce using rule 35 (logicOperator)
-
-
-State 43
-
-   14 factor: factor logicOperator . literal
+   13 term: term pointOperator . factor
 
     OP_SUB    shift, and go to state 13
     VAR       shift, and go to state 14
@@ -545,52 +526,276 @@ State 43
     LIT_ZERO  shift, and go to state 17
     MISC_LP   shift, and go to state 18
 
-    literal  go to state 47
+    factor   go to state 51
+    literal  go to state 22
     number   go to state 23
+
+
+State 38
+
+   30 logicOperator: COMP_EQL .
+
+    $default  reduce using rule 30 (logicOperator)
+
+
+State 39
+
+   31 logicOperator: COMP_LT .
+
+    $default  reduce using rule 31 (logicOperator)
+
+
+State 40
+
+   32 logicOperator: COMP_LE .
+
+    $default  reduce using rule 32 (logicOperator)
+
+
+State 41
+
+   33 logicOperator: COMP_GT .
+
+    $default  reduce using rule 33 (logicOperator)
+
+
+State 42
+
+   34 logicOperator: COMP_GE .
+
+    $default  reduce using rule 34 (logicOperator)
+
+
+State 43
+
+   35 logicOperator: LOGIC_AND .
+
+    $default  reduce using rule 35 (logicOperator)
 
 
 State 44
 
-   16 literal: MISC_LP expr MISC_RP .
+   36 logicOperator: LOGIC_OR .
 
-    $default  reduce using rule 16 (literal)
+    $default  reduce using rule 36 (logicOperator)
 
 
 State 45
 
-   10 expr: expr lineOperator term .
-   12 term: term . pointOperator factor
+   15 factor: factor logicOperator . literal
 
-    OP_MUL  shift, and go to state 31
-    OP_DIV  shift, and go to state 32
-    OP_POT  shift, and go to state 33
-    OP_MOD  shift, and go to state 34
+    OP_SUB    shift, and go to state 13
+    VAR       shift, and go to state 14
+    LIT_INT   shift, and go to state 15
+    LIT_BOOL  shift, and go to state 16
+    LIT_ZERO  shift, and go to state 17
+    MISC_LP   shift, and go to state 18
 
-    $default  reduce using rule 10 (expr)
-
-    pointOperator  go to state 35
+    literal  go to state 52
+    number   go to state 23
 
 
 State 46
 
-   12 term: term pointOperator factor .
-   14 factor: factor . logicOperator literal
+    5 declaration: type VAR MISC_SEMI .
 
-    COMP_EQL   shift, and go to state 36
-    COMP_LT    shift, and go to state 37
-    COMP_LE    shift, and go to state 38
-    COMP_GT    shift, and go to state 39
-    COMP_GE    shift, and go to state 40
-    LOGIC_AND  shift, and go to state 41
-    LOGIC_OR   shift, and go to state 42
-
-    $default  reduce using rule 12 (term)
-
-    logicOperator  go to state 43
+    $default  reduce using rule 5 (declaration)
 
 
 State 47
 
-   14 factor: factor logicOperator literal .
+    7 assignment: VAR ASSIGN expr MISC_SEMI .
 
-    $default  reduce using rule 14 (factor)
+    $default  reduce using rule 7 (assignment)
+
+
+State 48
+
+   17 literal: MISC_LP expr MISC_RP .
+
+    $default  reduce using rule 17 (literal)
+
+
+State 49
+
+    1 program: program . declaration
+    2        | program . assignment
+    3        | program . controlBlock
+   37 controlBlock: CTRL_IF expr CTRL_THEN program . controlElif CTRL_END
+   38             | CTRL_IF expr CTRL_THEN program . controlElif CTRL_ELSE program CTRL_END
+
+    VAR        shift, and go to state 3
+    TYPE_INT   shift, and go to state 4
+    TYPE_CHAR  shift, and go to state 5
+    TYPE_BOOL  shift, and go to state 6
+    CTRL_IF    shift, and go to state 7
+    CTRL_ELIF  shift, and go to state 53
+
+    $default  reduce using rule 40 (controlElif)
+
+    declaration   go to state 8
+    assignment    go to state 9
+    type          go to state 10
+    controlBlock  go to state 11
+    controlElif   go to state 54
+
+
+State 50
+
+   11 expr: expr lineOperator term .
+   13 term: term . pointOperator factor
+
+    OP_MUL  shift, and go to state 33
+    OP_DIV  shift, and go to state 34
+    OP_POT  shift, and go to state 35
+    OP_MOD  shift, and go to state 36
+
+    $default  reduce using rule 11 (expr)
+
+    pointOperator  go to state 37
+
+
+State 51
+
+   13 term: term pointOperator factor .
+   15 factor: factor . logicOperator literal
+
+    COMP_EQL   shift, and go to state 38
+    COMP_LT    shift, and go to state 39
+    COMP_LE    shift, and go to state 40
+    COMP_GT    shift, and go to state 41
+    COMP_GE    shift, and go to state 42
+    LOGIC_AND  shift, and go to state 43
+    LOGIC_OR   shift, and go to state 44
+
+    $default  reduce using rule 13 (term)
+
+    logicOperator  go to state 45
+
+
+State 52
+
+   15 factor: factor logicOperator literal .
+
+    $default  reduce using rule 15 (factor)
+
+
+State 53
+
+   39 controlElif: CTRL_ELIF . expr CTRL_THEN program controlElif
+
+    OP_SUB    shift, and go to state 13
+    VAR       shift, and go to state 14
+    LIT_INT   shift, and go to state 15
+    LIT_BOOL  shift, and go to state 16
+    LIT_ZERO  shift, and go to state 17
+    MISC_LP   shift, and go to state 18
+
+    expr     go to state 55
+    term     go to state 20
+    factor   go to state 21
+    literal  go to state 22
+    number   go to state 23
+
+
+State 54
+
+   37 controlBlock: CTRL_IF expr CTRL_THEN program controlElif . CTRL_END
+   38             | CTRL_IF expr CTRL_THEN program controlElif . CTRL_ELSE program CTRL_END
+
+    CTRL_ELSE  shift, and go to state 56
+    CTRL_END   shift, and go to state 57
+
+
+State 55
+
+   11 expr: expr . lineOperator term
+   39 controlElif: CTRL_ELIF expr . CTRL_THEN program controlElif
+
+    OP_ADD     shift, and go to state 29
+    OP_SUB     shift, and go to state 30
+    CTRL_THEN  shift, and go to state 58
+
+    lineOperator  go to state 32
+
+
+State 56
+
+   38 controlBlock: CTRL_IF expr CTRL_THEN program controlElif CTRL_ELSE . program CTRL_END
+
+    $default  reduce using rule 4 (program)
+
+    program  go to state 59
+
+
+State 57
+
+   37 controlBlock: CTRL_IF expr CTRL_THEN program controlElif CTRL_END .
+
+    $default  reduce using rule 37 (controlBlock)
+
+
+State 58
+
+   39 controlElif: CTRL_ELIF expr CTRL_THEN . program controlElif
+
+    $default  reduce using rule 4 (program)
+
+    program  go to state 60
+
+
+State 59
+
+    1 program: program . declaration
+    2        | program . assignment
+    3        | program . controlBlock
+   38 controlBlock: CTRL_IF expr CTRL_THEN program controlElif CTRL_ELSE program . CTRL_END
+
+    VAR        shift, and go to state 3
+    TYPE_INT   shift, and go to state 4
+    TYPE_CHAR  shift, and go to state 5
+    TYPE_BOOL  shift, and go to state 6
+    CTRL_IF    shift, and go to state 7
+    CTRL_END   shift, and go to state 61
+
+    declaration   go to state 8
+    assignment    go to state 9
+    type          go to state 10
+    controlBlock  go to state 11
+
+
+State 60
+
+    1 program: program . declaration
+    2        | program . assignment
+    3        | program . controlBlock
+   39 controlElif: CTRL_ELIF expr CTRL_THEN program . controlElif
+
+    VAR        shift, and go to state 3
+    TYPE_INT   shift, and go to state 4
+    TYPE_CHAR  shift, and go to state 5
+    TYPE_BOOL  shift, and go to state 6
+    CTRL_IF    shift, and go to state 7
+    CTRL_ELIF  shift, and go to state 53
+
+    $default  reduce using rule 40 (controlElif)
+
+    declaration   go to state 8
+    assignment    go to state 9
+    type          go to state 10
+    controlBlock  go to state 11
+    controlElif   go to state 62
+
+
+State 61
+
+   38 controlBlock: CTRL_IF expr CTRL_THEN program controlElif CTRL_ELSE program CTRL_END .
+
+    $default  reduce using rule 38 (controlBlock)
+
+
+State 62
+
+   39 controlElif: CTRL_ELIF expr CTRL_THEN program controlElif .
+
+    $default  reduce using rule 39 (controlElif)
