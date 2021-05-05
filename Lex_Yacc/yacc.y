@@ -57,6 +57,7 @@ int lineno = 1;
 %%
 program:	program declaration { printf (" -PROG DECLARATION- \n"); }
         |       program assignment { printf (" -PROG ASSIGN- \n"); }
+        |       program logicExpr { printf (" -PROG LOGIC- \n"); }
         | ;
 
 declaration:    type VAR MISC_SEMI    
@@ -89,6 +90,20 @@ pointOperator:  OP_MUL
         |       OP_DIV
         |       OP_POT
         |       OP_MOD;
+
+logicExpr:      logicExpr logicOperator logicTerm
+        |       logicTerm;
+
+logicTerm:      MISC_LP logicExpr MISC_RP
+        |       VAR 
+        |       number
+        |       LIT_BOOL;
+
+logicOperator:  COMP_EQL
+        |       COMP_LT
+        |       COMP_LE
+        |       COMP_GT
+        |       COMP_GE;
 
 %%
 
