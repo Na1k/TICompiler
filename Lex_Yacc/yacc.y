@@ -5,6 +5,7 @@ void yyerror(char*);
 
 /*
  * TODO Create dictionary for Variable name & content transfer to yacc
+ * constants
  */
 int lineno = 1;
 %}
@@ -61,14 +62,12 @@ int lineno = 1;
 %%
 program:	program declaration { printf (" -PROG DECLARATION- \n"); }
         |       program assignment { printf (" -PROG ASSIGN- \n"); }
-        |       program logicExpr { printf (" -PROG LOGIC- \n"); }
         | ;
 
 declaration:    type VAR MISC_SEMI    
         |       type assignment;
 
-assignment:     VAR ASSIGN expr MISC_SEMI
-        /*|       VAR ASSIGN logicExpr MISC_SEMI*/;
+assignment:     VAR ASSIGN expr MISC_SEMI;
 
 type:           TYPE_INT
         |       TYPE_CHAR
@@ -80,7 +79,11 @@ expr:           expr lineOperator term
 term:           term pointOperator factor
         |       factor;
 
-factor:         MISC_LP expr MISC_RP
+factor:         factor logicOperator literal
+        |       literal;
+
+literal:        MISC_LP expr MISC_RP       
+        |       LIT_BOOL
         |       number
         |       VAR;
 
@@ -95,14 +98,14 @@ pointOperator:  OP_MUL
         |       OP_DIV
         |       OP_POT
         |       OP_MOD;
-
+/*
 logicExpr:      logicExpr logicOperator logicTerm
         |       logicTerm;
 
 logicTerm:      MISC_LP logicExpr MISC_RP
         |       VAR 
         |       number
-        |       LIT_BOOL;
+        |       LIT_BOOL;*/
 
 logicOperator:  COMP_EQL
         |       COMP_LT
