@@ -10,6 +10,11 @@ void yyerror(char*);
 int lineno = 1;
 %}
 
+%union {
+        int ival;
+        char *sval;
+}
+
 %token OP_ADD
 %token OP_SUB
 %token OP_MUL
@@ -36,9 +41,9 @@ int lineno = 1;
 %token TYPE_BOOL
 /*? float double short long unsigned ?*/
 
-%token LIT_INT /* int literal */
+%token <ival> LIT_INT /* int literal */
 %token LIT_BOOL /* true, false */
-%token LIT_CHAR
+%token <sval> LIT_CHAR
 %token LIT_ZERO
 
 %token CTRL_IF
@@ -68,27 +73,33 @@ program:	program declaration { printf (" -PROG DECLARATION- \n"); }
 declaration:    type VAR MISC_SEMI    
         |       type assignment;
 
-assignment:     VAR ASSIGN expr MISC_SEMI;
+assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
+        |       VAR ASSIGN LIT_CHAR MISC_SEMI {printf("%s", $3);};
 
 type:           TYPE_INT
         |       TYPE_CHAR
         |       TYPE_BOOL;
 
-expr:           expr lineOperator term
-        |       term;
 
-term:           term pointOperator factor
-        |       factor;
+exprlvl_1:      exprlvl_1 logicOperator exprlvl_2 
+        |       exprlvl_2;
 
-factor:         factor logicOperator literal
+exprlvl_2:      exprlvl_2 lineOperator exprlvl_3
+        |       exprlvl_3;
+
+exprlvl_3:      exprlvl_3 pointOperator exprlvl_4
+        |       exprlvl_4;   
+
+exprlvl_4:      exprlvl_4 potOperator literal
         |       literal;
 
-literal:        MISC_LP expr MISC_RP       
+
+literal:        MISC_LP exprlvl_1 MISC_RP       
         |       LIT_BOOL
         |       number
         |       VAR;
 
-number:         LIT_INT
+number:         LIT_INT {printf("%d",$1);}
         |       LIT_ZERO
         |       OP_SUB LIT_INT;         /* negative number */
 
@@ -97,8 +108,9 @@ lineOperator:   OP_ADD
         
 pointOperator:  OP_MUL
         |       OP_DIV
-        |       OP_POT
         |       OP_MOD;
+
+potOperator:    OP_POT;
 
 logicOperator:  COMP_EQL
         |       COMP_LT
@@ -111,11 +123,18 @@ logicOperator:  COMP_EQL
 
 /* if / while / control-structures */
 
-controlBlock:   CTRL_IF expr CTRL_THEN program controlElif CTRL_END
-        |       CTRL_IF expr CTRL_THEN program controlElif CTRL_ELSE program CTRL_END;
+controlBlock:   controlIf       
+        |       controlWhile;
 
-controlElif:   CTRL_ELIF expr CTRL_THEN program controlElif
+controlIf:      CTRL_IF exprlvl_1 CTRL_THEN program controlElif CTRL_END
+        |       CTRL_IF exprlvl_1 CTRL_THEN program controlElif CTRL_ELSE program CTRL_END;
+
+controlElif:    CTRL_ELIF exprlvl_1 CTRL_THEN program controlElif
         |;
+
+controlWhile:   CTRL_WHILE exprlvl_1 CTRL_DO program CTRL_END
+        |       CTRL_DO program CTRL_WHILE exprlvl_1 CTRL_END;
+
 
 %%
 

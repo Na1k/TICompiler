@@ -46,8 +46,8 @@
  /* XOR */
 
 0			return LIT_ZERO;
-[1-9][0-9]*		return LIT_INT;
-"'"[a-zA-Z_ ]?"'"       return LIT_CHAR;
+[1-9][0-9]*		{yylval.ival = atoi(yytext); return LIT_INT;}
+"'"[a-zA-Z_ ]?"'"       {yylval.sval = strdup(yytext); return LIT_CHAR;}
 "TRUE"                  return LIT_BOOL;
 "FALSE"                 return LIT_BOOL;
 
