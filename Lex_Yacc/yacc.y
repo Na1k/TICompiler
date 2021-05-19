@@ -54,6 +54,8 @@ int lineno = 1;
 %token LIT_BOOL /* true, false */
 %token <sval> LIT_CHAR
 %token LIT_ZERO
+%token LIT_STRING
+%token LIT_FLOAT
 
 %token CTRL_IF
 %token CTRL_THEN
@@ -86,13 +88,15 @@ declaration:    type VAR MISC_SEMI
 
 assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
         |       VAR ASSIGN LIT_CHAR MISC_SEMI {printf("%s", $3);}
+        |       VAR ASSIGN LIT_STRING MISC_SEMI
         |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI;
 
 arraystruct:    arrayitems
         |       arrayitems ARR_SEP arraystruct;  
 
 arrayitems:     exprlvl_1
-        |       LIT_CHAR; 
+        |       LIT_CHAR
+        |       LIT_STRING; 
 
 type:           TYPE_INT
         |       TYPE_FLOAT
@@ -120,8 +124,10 @@ literal:        MISC_LP exprlvl_1 MISC_RP
         |       VAR;
 
 number:         LIT_INT {printf("%d",$1);}
+        |       LIT_FLOAT
         |       LIT_ZERO
-        |       OP_SUB LIT_INT;         /* negative number */
+        |       OP_SUB LIT_INT         /* negative number */
+        |       OP_SUB LIT_FLOAT;
 
 lineOperator:   OP_ADD
         |       OP_SUB;      
