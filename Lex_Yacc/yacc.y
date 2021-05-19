@@ -22,6 +22,8 @@ int lineno = 1;
 %token OP_POT /* Potenzen */
 %token OP_MOD
 
+%token CONST_DECL
+
 %token ASSIGN /* = */
 
 %token COMP_EQL /* == */
@@ -36,15 +38,24 @@ int lineno = 1;
 
 %token VAR
 
+/* TYPES */
 %token TYPE_INT 
 %token TYPE_CHAR
 %token TYPE_BOOL
-/*? float double short long unsigned ?*/
+%token TYPE_FLOAT       /* TODO: LIT FLOAT */
+%token TYPE_STRING      /* TODO: LIT STRING*/
+%token TYPE_ARRAY       
+
+%token ARR_LP
+%token ARR_RP
+%token ARR_SEP
 
 %token <ival> LIT_INT /* int literal */
 %token LIT_BOOL /* true, false */
 %token <sval> LIT_CHAR
 %token LIT_ZERO
+%token LIT_STRING
+%token LIT_FLOAT
 
 %token CTRL_IF
 %token CTRL_THEN
@@ -71,13 +82,26 @@ program:	program declaration { printf (" -PROG DECLARATION- \n"); }
         | ;
 
 declaration:    type VAR MISC_SEMI    
-        |       type assignment;
+        |       type assignment
+        |       CONST_DECL type assignment
+        |       type TYPE_ARRAY assignment;
 
 assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
-        |       VAR ASSIGN LIT_CHAR MISC_SEMI {printf("%s", $3);};
+        |       VAR ASSIGN LIT_CHAR MISC_SEMI {printf("%s", $3);}
+        |       VAR ASSIGN LIT_STRING MISC_SEMI
+        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI;
+
+arraystruct:    arrayitems
+        |       arrayitems ARR_SEP arraystruct;  
+
+arrayitems:     exprlvl_1
+        |       LIT_CHAR
+        |       LIT_STRING; 
 
 type:           TYPE_INT
+        |       TYPE_FLOAT
         |       TYPE_CHAR
+        |       TYPE_STRING
         |       TYPE_BOOL;
 
 
@@ -100,8 +124,10 @@ literal:        MISC_LP exprlvl_1 MISC_RP
         |       VAR;
 
 number:         LIT_INT {printf("%d",$1);}
+        |       LIT_FLOAT
         |       LIT_ZERO
-        |       OP_SUB LIT_INT;         /* negative number */
+        |       OP_SUB LIT_INT         /* negative number */
+        |       OP_SUB LIT_FLOAT;
 
 lineOperator:   OP_ADD
         |       OP_SUB;      
