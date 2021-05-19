@@ -15,6 +15,11 @@
 "int"			return TYPE_INT;
 "char"                  return TYPE_CHAR;
 "bool"                  return TYPE_BOOL;
+"float"                 return TYPE_FLOAT;
+"string"                return TYPE_STRING;
+"["[1-9][0-9]*"]"       return TYPE_ARRAY;                    
+
+"const"                 return CONST_DECL;
 
 "if"			return CTRL_IF;
 "else"			return CTRL_ELSE;
@@ -50,6 +55,10 @@
 "'"[a-zA-Z_ ]?"'"       {yylval.sval = strdup(yytext); return LIT_CHAR;}
 "TRUE"                  return LIT_BOOL;
 "FALSE"                 return LIT_BOOL;
+
+"{"                     return ARR_LP;
+"}"                     return ARR_RP;
+","                     return ARR_SEP;
 
 [a-z][a-zA-Z0-9_-]*	return VAR;
 			
