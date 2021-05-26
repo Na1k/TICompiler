@@ -119,12 +119,12 @@ Terminals, with rules where they appear
     ARR_LP (281) 12
     ARR_RP (282) 12
     ARR_SEP (283) 14
-    LIT_INT <ival> (284) 35 38
-    LIT_BOOL (285) 32
+    LIT_INT <nval> (284) 35 38
+    LIT_BOOL <nval> (285) 32
     LIT_CHAR <sval> (286) 10 16
-    LIT_ZERO (287) 37
-    LIT_STRING (288) 11 17
-    LIT_FLOAT (289) 36 39
+    LIT_ZERO <nval> (287) 37
+    LIT_STRING <sval> (288) 11 17
+    LIT_FLOAT <nval> (289) 36 39
     CTRL_IF (290) 55 56
     CTRL_THEN (291) 55 56 57
     CTRL_ELSE (292) 56
@@ -175,7 +175,7 @@ Nonterminals, with rules where they appear
     literal (57)
         on left: 31 32 33 34
         on right: 29 30
-    number (58)
+    number <nval> (58)
         on left: 35 36 37 38 39
         on right: 33
     lineOperator (59)

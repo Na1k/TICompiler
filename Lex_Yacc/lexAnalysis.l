@@ -50,13 +50,13 @@
 
  /* XOR */
 
-0			return LIT_ZERO;
-[1-9][0-9]*		{yylval.ival = atoi(yytext); return LIT_INT;}
+0			{yylval.nval.type = 0; yylval.nval.ival = 0; return LIT_ZERO;}
+[1-9][0-9]*		{yylval.nval.type = 0; yylval.nval.ival = atoi(yytext); return LIT_INT;}
 "'"[a-zA-Z0-9_ ]?"'"    {yylval.sval = strdup(yytext); return LIT_CHAR;}
-"TRUE"                  return LIT_BOOL;
-"FALSE"                 return LIT_BOOL;
-([1-9][0-9]*|0)\.[0-9]* return LIT_FLOAT;
-"\""[a-zA-Z0-9_ ]*"\""  return LIT_STRING;
+"TRUE"                  {yylval.nval.type = 2; yylval.nval.ival = 1; return LIT_BOOL;}
+"FALSE"                 {yylval.nval.type = 2; yylval.nval.ival = 0; return LIT_BOOL;}
+([1-9][0-9]*|0)\.[0-9]* {yylval.nval.type = 3; yylval.nval.fval = atof(yytext); return LIT_FLOAT;}
+"\""[a-zA-Z0-9_ ]*"\""  {yylval.sval = strdup(yytext); return LIT_STRING;}
 
 "{"                     return ARR_LP;
 "}"                     return ARR_RP;

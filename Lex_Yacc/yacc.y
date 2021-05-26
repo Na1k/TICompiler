@@ -10,7 +10,7 @@
  */
         int lineno = 1;
 
-        typedef enum Type{
+        typedef enum Type {
                 INT = 0,
                 CHAR,
                 BOOL,
@@ -18,27 +18,39 @@
                 STRING
         } Type;
 
-        typedef enum Flags{
+        typedef enum Flags {
                 E_CONST = 0x01,   //0001
                 E_VAR = 0x02,     //0010
                 E_ARR = 0x04,      //0100
                 E_UNDEF = 0x08
         } Flags;
 
-        typedef struct Variable{
+        typedef struct Variable {
                 char* name;
-                enum Type type;                 //"enum" needed??
-                enum Flags flags;
+                Type type;                 
+                Flags flags;
                 unsigned char* value;           //zeigt auf 1 Byte
                 int length;                     //wie viele Bytes?
                 struct Variable* next;
-                struct Variable* prev;
         } Variable;
+
+
+        //typedef struct Number Number;
 %}
 
+
 %union {
-        int ival;
         char *sval;
+        struct Number 
+        {
+                int type;
+                union
+                {
+                        int ival;
+                        float fval;
+                };
+                
+        } nval;
 }
 
 %token OP_ADD
@@ -76,12 +88,12 @@
 %token ARR_RP
 %token ARR_SEP
 
-%token <ival> LIT_INT /* int literal */
-%token LIT_BOOL /* true, false */
+%token <nval> LIT_INT /* int literal */
+%token <nval> LIT_BOOL /* true, false */
 %token <sval> LIT_CHAR
-%token LIT_ZERO
-%token LIT_STRING
-%token LIT_FLOAT
+%token <nval> LIT_ZERO
+%token <sval> LIT_STRING
+%token <nval> LIT_FLOAT
 
 %token CTRL_IF
 %token CTRL_THEN
@@ -96,6 +108,8 @@
 %token MISC_SEMI
 
 %token ERROR
+
+%type <nval> number
 
 /*
  * Declare Syntax
@@ -114,7 +128,7 @@ declaration:    type VAR MISC_SEMI {printf("%lu", strlen($2));}
 
 assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
         |       VAR ASSIGN LIT_CHAR MISC_SEMI {printf("%s", $3);}
-        |       VAR ASSIGN LIT_STRING MISC_SEMI
+        |       VAR ASSIGN LIT_STRING MISC_SEMI {printf("%s", $3);}; 
         |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI;
 
 arraystruct:    arrayitems
@@ -122,7 +136,7 @@ arraystruct:    arrayitems
 
 arrayitems:     exprlvl_1
         |       LIT_CHAR
-        |       LIT_STRING; 
+        |       LIT_STRING 
 
 type:           TYPE_INT
         |       TYPE_FLOAT
@@ -149,11 +163,11 @@ literal:        MISC_LP exprlvl_1 MISC_RP
         |       number
         |       VAR;
 
-number:         LIT_INT {printf("%d",$1);}
-        |       LIT_FLOAT
-        |       LIT_ZERO
-        |       OP_SUB LIT_INT         /* negative number */
-        |       OP_SUB LIT_FLOAT;
+number:         LIT_INT {printf("%d",$1.ival); $$ = $1;}
+        |       LIT_FLOAT {printf("%f",$1.fval); $$ = $1;}
+        |       LIT_ZERO {printf("%d %d", $1.ival, $1.type); $$ = $1;}
+        |       OP_SUB LIT_INT {printf("%d",$2.ival); $$ = $2;}        /* negative number */
+        |       OP_SUB LIT_FLOAT {printf("%f",$2.fval); $$ = $2;};
 
 lineOperator:   OP_ADD
         |       OP_SUB;      
