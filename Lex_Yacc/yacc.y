@@ -1,13 +1,39 @@
 %{
-#include <stdio.h>
-int yylex(void);
-void yyerror(char*);
+        #include <stdio.h>
+        #include <string.h>
+        int yylex(void);
+        void yyerror(char*);
 
 /*
  * TODO Create dictionary for Variable name & content transfer to yacc
  * constants
  */
-int lineno = 1;
+        int lineno = 1;
+
+        typedef enum Type{
+                INT = 0,
+                CHAR,
+                BOOL,
+                FLOAT,
+                STRING
+        } Type;
+
+        typedef enum Flags{
+                E_CONST = 0x01,   //0001
+                E_VAR = 0x02,     //0010
+                E_ARR = 0x04,      //0100
+                E_UNDEF = 0x08
+        } Flags;
+
+        typedef struct Variable{
+                char* name;
+                enum Type type;                 //"enum" needed??
+                enum Flags flags;
+                unsigned char* value;           //zeigt auf 1 Byte
+                int length;                     //wie viele Bytes?
+                struct Variable* next;
+                struct Variable* prev;
+        } Variable;
 %}
 
 %union {
@@ -36,7 +62,7 @@ int lineno = 1;
 %token LOGIC_OR  /* | */
 %token LOGIC_NOT  /* ! */
 
-%token VAR
+%token <sval> VAR
 
 /* TYPES */
 %token TYPE_INT 
@@ -81,7 +107,7 @@ program:	program declaration { printf (" -PROG DECLARATION- \n"); }
         |       program controlBlock { printf (" -PROG CTRL- \n"); }
         | ;
 
-declaration:    type VAR MISC_SEMI    
+declaration:    type VAR MISC_SEMI {printf("%lu", strlen($2));} 
         |       type assignment
         |       CONST_DECL type assignment
         |       type TYPE_ARRAY assignment;
@@ -168,4 +194,8 @@ void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
 int main(void) { 
 	yyparse();
 	return 0;
+}
+
+void makeVar(int type, char* name, int nameLen){
+
 }

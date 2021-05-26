@@ -109,7 +109,7 @@ Terminals, with rules where they appear
     LOGIC_AND (271) 51
     LOGIC_OR (272) 52
     LOGIC_NOT (273)
-    VAR (274) 5 9 10 11 12 34
+    VAR <sval> (274) 5 9 10 11 12 34
     TYPE_INT (275) 18
     TYPE_CHAR (276) 20
     TYPE_BOOL (277) 22
