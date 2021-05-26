@@ -1,18 +1,56 @@
 %{
-#include <stdio.h>
-int yylex(void);
-void yyerror(char*);
+        #include <stdio.h>
+        #include <string.h>
+        int yylex(void);
+        void yyerror(char*);
 
 /*
  * TODO Create dictionary for Variable name & content transfer to yacc
  * constants
  */
-int lineno = 1;
+        int lineno = 1;
+
+        typedef enum Type {
+                INT = 0,
+                CHAR,
+                BOOL,
+                FLOAT,
+                STRING
+        } Type;
+
+        typedef enum Flags {
+                E_CONST = 0x01,   //0001
+                E_VAR = 0x02,     //0010
+                E_ARR = 0x04,      //0100
+                E_UNDEF = 0x08
+        } Flags;
+
+        typedef struct Variable {
+                char* name;
+                Type type;                 
+                Flags flags;
+                unsigned char* value;           //zeigt auf 1 Byte
+                int length;                     //wie viele Bytes?
+                struct Variable* next;
+        } Variable;
+
+
+        //typedef struct Number Number;
 %}
 
+
 %union {
-        int ival;
         char *sval;
+        struct Number 
+        {
+                int type;
+                union
+                {
+                        int ival;
+                        float fval;
+                };
+                
+        } nval;
 }
 
 %token OP_ADD
@@ -36,7 +74,7 @@ int lineno = 1;
 %token LOGIC_OR  /* | */
 %token LOGIC_NOT  /* ! */
 
-%token VAR
+%token <sval> VAR
 
 /* TYPES */
 %token TYPE_INT 
@@ -50,12 +88,12 @@ int lineno = 1;
 %token ARR_RP
 %token ARR_SEP
 
-%token <ival> LIT_INT /* int literal */
-%token LIT_BOOL /* true, false */
+%token <nval> LIT_INT /* int literal */
+%token <nval> LIT_BOOL /* true, false */
 %token <sval> LIT_CHAR
-%token LIT_ZERO
-%token LIT_STRING
-%token LIT_FLOAT
+%token <nval> LIT_ZERO
+%token <sval> LIT_STRING
+%token <nval> LIT_FLOAT
 
 %token CTRL_IF
 %token CTRL_THEN
@@ -71,6 +109,8 @@ int lineno = 1;
 
 %token ERROR
 
+%type <nval> number
+
 /*
  * Declare Syntax
  */
@@ -81,14 +121,14 @@ program:	program declaration { printf (" -PROG DECLARATION- \n"); }
         |       program controlBlock { printf (" -PROG CTRL- \n"); }
         | ;
 
-declaration:    type VAR MISC_SEMI    
+declaration:    type VAR MISC_SEMI {printf("%lu", strlen($2));} 
         |       type assignment
         |       CONST_DECL type assignment
         |       type TYPE_ARRAY assignment;
 
 assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
         |       VAR ASSIGN LIT_CHAR MISC_SEMI {printf("%s", $3);}
-        |       VAR ASSIGN LIT_STRING MISC_SEMI
+        |       VAR ASSIGN LIT_STRING MISC_SEMI {printf("%s", $3);}; 
         |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI;
 
 arraystruct:    arrayitems
@@ -96,7 +136,7 @@ arraystruct:    arrayitems
 
 arrayitems:     exprlvl_1
         |       LIT_CHAR
-        |       LIT_STRING; 
+        |       LIT_STRING 
 
 type:           TYPE_INT
         |       TYPE_FLOAT
@@ -123,11 +163,11 @@ literal:        MISC_LP exprlvl_1 MISC_RP
         |       number
         |       VAR;
 
-number:         LIT_INT {printf("%d",$1);}
-        |       LIT_FLOAT
-        |       LIT_ZERO
-        |       OP_SUB LIT_INT         /* negative number */
-        |       OP_SUB LIT_FLOAT;
+number:         LIT_INT {printf("%d",$1.ival); $$ = $1;}
+        |       LIT_FLOAT {printf("%f",$1.fval); $$ = $1;}
+        |       LIT_ZERO {printf("%d %d", $1.ival, $1.type); $$ = $1;}
+        |       OP_SUB LIT_INT {printf("%d",$2.ival); $$ = $2;}        /* negative number */
+        |       OP_SUB LIT_FLOAT {printf("%f",$2.fval); $$ = $2;};
 
 lineOperator:   OP_ADD
         |       OP_SUB;      
@@ -168,4 +208,8 @@ void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
 int main(void) { 
 	yyparse();
 	return 0;
+}
+
+void makeVar(int type, char* name, int nameLen){
+
 }
