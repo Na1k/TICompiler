@@ -62,7 +62,7 @@
 "}"                     return ARR_RP;
 ","                     return ARR_SEP;
 
-[a-z][a-zA-Z0-9_-]*	{yylval.varName = strdup(yytext); return VAR;}
+[a-z][a-zA-Z0-9_-]*	{yylval.data.type = -1; yylval.data.sval = strdup(yytext); return VAR;}
 			
 "("			return MISC_LP;
 ")"			return MISC_RP;

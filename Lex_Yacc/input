@@ -1,6 +1,1 @@
-if(a<b) THEN
-	int i = 0;
-end
-if(b<c) THEN
-	float c = 3.001;
-end
+a = 3 + 5;
