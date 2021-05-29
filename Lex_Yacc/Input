@@ -1,4 +1,4 @@
-string a = "abc";
-float b = 1.001;
-int b = 0;
+string a;
+float b;
+float a;
 
