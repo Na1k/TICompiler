@@ -21,13 +21,13 @@
 
 "const"                 return CONST_DECL;
 
-"if"			return CTRL_IF;
-"else"			return CTRL_ELSE;
-"elif"                  return CTRL_ELIF;
-"then"                  return CTRL_THEN;
-"end"                   return CTRL_END;
-"while"                 return CTRL_WHILE;
-"do"                    return CTRL_DO;
+("if"|"IF")		return CTRL_IF;
+("else"|"ELSE")		return CTRL_ELSE;
+("elif"|"ELIF")         return CTRL_ELIF;
+("then"|"THEN")         return CTRL_THEN;
+("end"|"END")           return CTRL_END;
+("while"|"WHILE")       return CTRL_WHILE;
+("do"|"DO")             return CTRL_DO;
 
 "+"                     return OP_ADD;
 "-"                     return OP_SUB;
@@ -50,19 +50,19 @@
 
  /* XOR */
 
-0			{yylval.nval.type = 0; yylval.nval.ival = 0; return LIT_ZERO;}
-[1-9][0-9]*		{yylval.nval.type = 0; yylval.nval.ival = atoi(yytext); return LIT_INT;}
-"'"[a-zA-Z0-9_ ]?"'"    {yylval.sval = strdup(yytext); return LIT_CHAR;}
-"TRUE"                  {yylval.nval.type = 2; yylval.nval.ival = 1; return LIT_BOOL;}
-"FALSE"                 {yylval.nval.type = 2; yylval.nval.ival = 0; return LIT_BOOL;}
-([1-9][0-9]*|0)\.[0-9]* {yylval.nval.type = 3; yylval.nval.fval = atof(yytext); return LIT_FLOAT;}
-"\""[a-zA-Z0-9_ ]*"\""  {yylval.sval = strdup(yytext); return LIT_STRING;}
+0			{yylval.data.type = 0; yylval.data.ival = 0; return LIT_ZERO;}
+[1-9][0-9]*		{yylval.data.type = 0; yylval.data.ival = atoi(yytext); return LIT_INT;}
+"'"[a-zA-Z0-9_ ]?"'"    {yylval.data.type = 1; yylval.data.sval = strdup(yytext); return LIT_CHAR;}
+("TRUE"|"true")         {yylval.data.type = 2; yylval.data.ival = 1; return LIT_BOOL;}
+("FALSE"|"false")       {yylval.data.type = 2; yylval.data.ival = 0; return LIT_BOOL;}
+([1-9][0-9]*|0)\.[0-9]* {yylval.data.type = 3; yylval.data.fval = atof(yytext); return LIT_FLOAT;}
+"\""[a-zA-Z0-9_ ]*"\""  {yylval.data.type = 4; yylval.data.sval = strdup(yytext); return LIT_STRING;}
 
 "{"                     return ARR_LP;
 "}"                     return ARR_RP;
 ","                     return ARR_SEP;
 
-[a-z][a-zA-Z0-9_-]*	{yylval.sval = strdup(yytext); return VAR;}
+[a-z][a-zA-Z0-9_-]*	{yylval.varName = strdup(yytext); return VAR;}
 			
 "("			return MISC_LP;
 ")"			return MISC_RP;

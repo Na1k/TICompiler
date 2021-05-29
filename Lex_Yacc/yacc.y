@@ -40,17 +40,18 @@
 
 
 %union {
-        char *sval;
-        struct Number 
+        char *varName;
+        struct Data 
         {
                 int type;
                 union
                 {
                         int ival;
                         float fval;
+                        char *sval;
                 };
                 
-        } nval;
+        } data;
 }
 
 %token OP_ADD
@@ -74,26 +75,26 @@
 %token LOGIC_OR  /* | */
 %token LOGIC_NOT  /* ! */
 
-%token <sval> VAR
+%token <varName> VAR
 
 /* TYPES */
 %token TYPE_INT 
 %token TYPE_CHAR
 %token TYPE_BOOL
-%token TYPE_FLOAT       /* TODO: LIT FLOAT */
-%token TYPE_STRING      /* TODO: LIT STRING*/
+%token TYPE_FLOAT      
+%token TYPE_STRING     
 %token TYPE_ARRAY       
 
 %token ARR_LP
 %token ARR_RP
 %token ARR_SEP
 
-%token <nval> LIT_INT /* int literal */
-%token <nval> LIT_BOOL /* true, false */
-%token <sval> LIT_CHAR
-%token <nval> LIT_ZERO
-%token <sval> LIT_STRING
-%token <nval> LIT_FLOAT
+%token <data> LIT_INT /* int literal */
+%token <data> LIT_BOOL /* true, false */
+%token <data> LIT_CHAR
+%token <data> LIT_ZERO
+%token <data> LIT_STRING
+%token <data> LIT_FLOAT
 
 %token CTRL_IF
 %token CTRL_THEN
@@ -109,7 +110,7 @@
 
 %token ERROR
 
-%type <nval> number
+%type <data> number
 
 /*
  * Declare Syntax
@@ -127,8 +128,8 @@ declaration:    type VAR MISC_SEMI {printf("%lu", strlen($2));}
         |       type TYPE_ARRAY assignment;
 
 assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
-        |       VAR ASSIGN LIT_CHAR MISC_SEMI {printf("%s", $3);}
-        |       VAR ASSIGN LIT_STRING MISC_SEMI {printf("%s", $3);}; 
+        |       VAR ASSIGN LIT_CHAR MISC_SEMI {printf("%s", $3.sval);}
+        |       VAR ASSIGN LIT_STRING MISC_SEMI {printf("%s", $3.sval);}; 
         |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI;
 
 arraystruct:    arrayitems
@@ -164,7 +165,7 @@ literal:        MISC_LP exprlvl_1 MISC_RP
         |       VAR;
 
 number:         LIT_INT {printf("%d",$1.ival); $$ = $1;}
-        |       LIT_FLOAT {printf("%f",$1.fval); $$ = $1;}
+        |       LIT_FLOAT {printf("%f %d",$1.fval, $1.type); $$ = $1;}
         |       LIT_ZERO {printf("%d %d", $1.ival, $1.type); $$ = $1;}
         |       OP_SUB LIT_INT {printf("%d",$2.ival); $$ = $2;}        /* negative number */
         |       OP_SUB LIT_FLOAT {printf("%f",$2.fval); $$ = $2;};
