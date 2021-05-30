@@ -26,23 +26,40 @@
                 E_UNDEF = 0x08
         } Flags;
 
+        typedef struct SytaxNode{
+            int nodeType; //identifieziert die node selbst (eg Int/eqlvl1 etc...)
+            union
+            {
+                int ival;
+                float fval;
+                char *sval;
+            };
+            struct SyntaxNode* leftChild;
+            struct SyntaxNode* rightChild;
+        } SyntaxNode;
+
         typedef struct Variable {
                 char* name;
                 Type type;                 
                 Flags flags;
-                unsigned char* value;           //zeigt auf 1 Byte
+                SyntaxNode* value;           //zeigt auf SyntaxNode
                 int length;                     //wie viele Bytes?
                 struct Variable* next;
         } Variable;
 
+
         Variable* root = NULL;
 
         //Forward-Declaration
-        void makeVar(int type, char* name, int nameLen);
+        Variable* makeVar(int type, char* name);
+        void insertVar(Variable* var, Flags flags);
+        void checkVar(Variable* var); //checks if Var exists for assignment
+        void printVars();
 %}
 
 
 %union {
+        void* var;
         struct Data 
         {
                 int type;
@@ -120,25 +137,27 @@
 %type <data> exprlvl_3
 %type <data> exprlvl_4
 
+%type<var> assignment
+
 /*
  * Declare Syntax
  */
 
 %%
 program:	program declaration { printf (" -PROG DECLARATION- \n"); }
-        |       program assignment { printf (" -PROG ASSIGN- \n"); }
+        |       program assignment {checkVar((Variable*)$2); printf (" -PROG ASSIGN- \n"); }
         |       program controlBlock { printf (" -PROG CTRL- \n"); }
         | ;
 
-declaration:    type VAR MISC_SEMI {makeVar($1, $2.sval, 10);}
-        |       type assignment
-        |       CONST_DECL type assignment
-        |       type TYPE_ARRAY assignment;
+declaration:    type VAR MISC_SEMI {insertVar(makeVar($1, $2.sval), E_UNDEF);}
+        |       type assignment {insertVar((Variable*)$2, E_VAR);}
+        |       CONST_DECL type assignment {insertVar((Variable*)$3, E_CONST);}
+        |       type TYPE_ARRAY assignment {insertVar((Variable*)$3, E_ARR);};
 
-assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI {printf("%d", $3.ival);}
-        |       VAR ASSIGN LIT_CHAR MISC_SEMI {printf("%s", $3.sval);}
-        |       VAR ASSIGN LIT_STRING MISC_SEMI {printf("%s", $3.sval);}; 
-        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI;
+assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI {$$ = (void*)makeVar(INT, $1.sval);}
+        |       VAR ASSIGN LIT_CHAR MISC_SEMI {$$ = (void*)makeVar(CHAR, $1.sval);}
+        |       VAR ASSIGN LIT_STRING MISC_SEMI {$$ = (void*)makeVar(STRING, $1.sval);}
+        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI{$$ = (void*)makeVar(INT, $1.sval);};
 
 arraystruct:    arrayitems
         |       arrayitems ARR_SEP arraystruct;  
@@ -179,8 +198,8 @@ number:         LIT_INT {$$ = $1;}
         |       OP_SUB LIT_FLOAT {printf("%f",$2.fval); $$ = $2;};
 
 lineOperator:   OP_ADD
-        |       OP_SUB;      
-        
+        |       OP_SUB;
+
 pointOperator:  OP_MUL
         |       OP_DIV
         |       OP_MOD;
@@ -217,38 +236,95 @@ void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
 
 int main(void) { 
 	yyparse();
+        printVars();
 	return 0;
 }
 
-void makeVar(int varType, char* varName, int nameLen){
-        Variable* var = (Variable*) malloc(sizeof(Variable));
-        var->type = varType;
-        var->name = varName;
-        (void)nameLen;
-        var->next = NULL;
+Variable* makeVar(int varType, char* varName){
+    Variable* var = (Variable*) malloc(sizeof(Variable));
+    var->type = varType;
+    var->name = varName;
+    var->next = NULL;
+    return var;
+}
 
-        if(root == NULL)
-        {
-                root = var;     
-        }
-        else
-        {
-                Variable* tmp = root;
-                
-                while (tmp->next){
-                        if(strcmp(tmp->name, var->name) == 0){
-                                free(var);
-                                yyerror("Fehlermeldung, VarName bereits vorhanden");
-                                exit(-1);
-                        }
-                        tmp = tmp->next;
-                }
+void insertVar(Variable* var, Flags flags){
+    var->flags = flags;
+    if(!root)
+    {
+            root = var;
+    }
+    else
+    {
+            Variable* tmp = root;
+
+            while(tmp){
                 if(strcmp(tmp->name, var->name) == 0){
                         free(var);
                         yyerror("Fehlermeldung, VarName bereits vorhanden");
                         exit(-1);
                 }
-                tmp->next = var;
-        
-        }
+                if(tmp->next)
+                    tmp = tmp->next;
+                else
+                    break;
+            }
+            tmp->next = var;
+    }
 }
+
+void checkVar(Variable* var){
+
+    if(!root)
+    {
+        free(var);
+        yyerror("Fehlermeldung, Var nicht deklariert(in fact, no vars are deklariert)");
+        exit(-1);
+    }
+    else
+    {
+            Variable* varOld = root;
+
+            while(varOld){
+                if(strcmp(varOld->name, var->name) == 0){
+                    if(varOld->flags & E_CONST){
+                        free(var);
+                        yyerror("Fehlermeldung, Neuzuweisung Konstante - pfui");
+                        exit(-1);
+                    }
+                    free(var);
+                    return;
+                }
+                if(varOld->next)
+                    varOld = varOld->next;
+                else
+                    break;
+            }
+            free(var);
+            yyerror("Fehlermeldung, Var nicht deklariert");
+            exit(-1);
+    }
+}
+
+void printVars(){
+    Variable* tmp;
+    tmp = root;
+    int varNum = 0;
+    while(tmp){
+        printf("%d Type: %d Name: %s Flags: %d\n", varNum, tmp->type, tmp->name, tmp->flags);
+        varNum++;
+        if(tmp->next)
+            tmp = tmp->next;
+        else
+            break;
+    }
+}
+
+
+
+
+
+
+
+
+
