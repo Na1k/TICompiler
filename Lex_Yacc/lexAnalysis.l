@@ -19,7 +19,7 @@
 "string"                return TYPE_STRING;
 "["[1-9][0-9]*"]"       return TYPE_ARRAY;                    
 
-"const"                 return CONST_DECL;
+("const"|"CONST")       return CONST_DECL;
 
 ("if"|"IF")		return CTRL_IF;
 ("else"|"ELSE")		return CTRL_ELSE;
