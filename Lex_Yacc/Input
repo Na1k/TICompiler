@@ -1,4 +1,4 @@
-string a;
-float b;
-float a;
-
+const int a = 5;
+int b;
+a = 4;
+b= 5;
