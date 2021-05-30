@@ -195,7 +195,7 @@ number:         LIT_INT {$$ = $1;}
         |       LIT_FLOAT {printf("%f %d",$1.fval, $1.type); $$ = $1;}
         |       LIT_ZERO {printf("%d %d", $1.ival, $1.type); $$ = $1;}
         |       OP_SUB LIT_INT {$2.ival = -$2.ival; printf("%d",$2.ival); $$ = $2;}        /* negative number */
-        |       OP_SUB LIT_FLOAT {printf("%f",$2.fval); $$ = $2;};
+        |       OP_SUB LIT_FLOAT {$2.fval = -$2.fval; printf("%f",$2.fval); $$ = $2;};
 
 lineOperator:   OP_ADD
         |       OP_SUB;

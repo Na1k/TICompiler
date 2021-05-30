@@ -1,4 +1,1 @@
-const int a = 5;
-int b;
-a = 4;
-b= 5;
+float fvalue = -5.3;
