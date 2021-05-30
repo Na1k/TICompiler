@@ -12,4 +12,4 @@ gcc -c lex.yy.c
 
 gcc -o $3 y.tab.o lex.yy.o -ll
 
-rm lex.yy.* y.tab.*
+rm lex.yy.* y.tab.* y.output
