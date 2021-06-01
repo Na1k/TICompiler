@@ -1,0 +1,57 @@
+//Test Input File, um alle Funktionalitaeten testen zu koennen
+
+//DECLARATIONS
+int aaa;
+INT AAA;
+FLOAT fff;
+char ccc;
+string sss;
+printf("DECLARATIONS working")
+
+//DECLARATIONS WITH ASSIGNMENT
+int a = 10;
+INT b = 30;
+int c = a + b;
+ind d = -25;
+int e = -a;
+float f = 10.5;
+FLOAT g = -23.43434551;
+char i = "e";
+CHAR IGI = "d";
+bool wahr1 = true;
+BOOL wahr2 = TRUE;
+bool falsch1 = false;
+bool falsch_2 = false;
+string string1 = "Hello in lulus!";
+STRING string__2 = "ich war hier!";
+string string3 = string1;
+printf("DECLARATIONS WITH ASSIGNMENT working")
+
+//ASSIGNMENTS
+aaa = 23;
+AAA = 14 + 29;
+fff = 24.0657;
+ccc = "c";
+sss = "stringlbingl";
+printf("ASSIGNMENTS working")
+
+//CONTROLBLOCKS
+IF aaa==23 
+  THEN 
+    AAA = 1;
+  ELSE
+    AAA = 2;
+END
+
+
+printf("CONTROLBLOCKS working")
+
+
+//ARRAYS
+
+//Expected errors
+//int x1 = 10.2;
+//int x2 = int x1;
+//int x3 = x1 = 12
+//char UGA = 23;
+//string4 = string1 + 1;
