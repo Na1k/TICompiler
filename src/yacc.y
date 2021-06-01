@@ -2,6 +2,7 @@
         #include <stdio.h>
         #include <string.h>
         #include <stdlib.h>
+        #include "thunderstruct.h"
         int yylex(void);
         void yyerror(char*);
 
@@ -11,90 +12,47 @@
  */
         int lineno = 1;
 
-        typedef enum Type {
-                INT = 0,
-                CHAR,
-                BOOL,
-                FLOAT,
-                STRING
-        } Type;
 
-        typedef enum Flags {
-                E_CONST = 0x01,   //0001
-                E_VAR = 0x02,     //0010
-                E_ARR = 0x04,      //0100
-                E_UNDEF = 0x08
-        } Flags;
-
-        typedef struct SytaxNode{
-            int nodeType; //identifieziert die node selbst (eg Int/eqlvl1 etc...)
-            union
-            {
-                int ival;
-                float fval;
-                char *sval;
-            };
-            struct SyntaxNode* leftChild;
-            struct SyntaxNode* rightChild;
-        } SyntaxNode;
-
-        typedef struct Variable {
-                char* name;
-                Type type;                 
-                Flags flags;
-                SyntaxNode* value;           //zeigt auf SyntaxNode
-                int length;                     //wie viele Bytes?
-                struct Variable* next;
-        } Variable;
 
 
         Variable* root = NULL;
 
         //Forward-Declaration
         Variable* makeVar(int type, char* name);
-        void insertVar(Variable* var, Flags flags);
-        void checkVar(Variable* var); //checks if Var exists for assignment
-        void printVars();
+        void insertVar(Variable* var, Flags flags);     //insert Var into struct "Variable"
+        void assignVar(Variable* var);                  //checks if Var exists for assignment
+        void printVars();                               //print all nodes in "Variable" (last action of program, called in main)
+        Variable* getVar(char* name);
 %}
 
 
 %union {
-        void* var;
-        struct Data 
-        {
-                int type;
-                union
-                {
-                        int ival;
-                        float fval;
-                        char *sval;
-                };
-                
-        } data;
+        void* content;
+        int type;
 }
 
 %token OP_ADD
 %token OP_SUB
 %token OP_MUL
-%token OP_DIV
-%token OP_POT /* Potenzen */
+%token OP_DIV 
+%token OP_POT   //Potenzen
 %token OP_MOD
 
 %token CONST_DECL
 
-%token ASSIGN /* = */
+%token ASSIGN   // =
 
-%token COMP_EQL /* == */
-%token COMP_LT  /* <  */
-%token COMP_LE  /* <= */
-%token COMP_GT  /* >  */
-%token COMP_GE  /* >= */
+%token COMP_EQL         // == 
+%token COMP_LT          // <  
+%token COMP_LE          // <= 
+%token COMP_GT          // >  
+%token COMP_GE          // >= 
 
-%token LOGIC_AND  /* & */
-%token LOGIC_OR  /* | */
-%token LOGIC_NOT  /* ! */
+%token LOGIC_AND        // & 
+%token LOGIC_OR         // | 
+%token LOGIC_NOT        // ! 
 
-%token <data> VAR
+%token <content> VAR
 
 /* TYPES */
 %token TYPE_INT 
@@ -108,19 +66,19 @@
 %token ARR_RP
 %token ARR_SEP
 
-%token <data> LIT_INT /* int literal */
-%token <data> LIT_BOOL /* true, false */
-%token <data> LIT_CHAR
-%token <data> LIT_ZERO
-%token <data> LIT_STRING
-%token <data> LIT_FLOAT
+%token <content> LIT_INT   // int literal 
+%token <content> LIT_BOOL  // true, false 
+%token <content> LIT_CHAR
+%token <content> LIT_ZERO
+%token <content> LIT_STRING
+%token <content> LIT_FLOAT
 
 %token CTRL_IF
 %token CTRL_THEN
 %token CTRL_ELSE
 %token CTRL_ELIF
 %token CTRL_END
-%token CTRL_WHILE /* DO ... WHILE exp END | WHILE exp DO ... END */
+%token CTRL_WHILE       // DO ... WHILE exp END | WHILE exp DO ... END 
 %token CTRL_DO
 
 %token MISC_LP
@@ -129,15 +87,15 @@
 
 %token ERROR
 
-%type <data.type> type
-%type <data> number
-%type <data> literal
-%type <data> exprlvl_1
-%type <data> exprlvl_2
-%type <data> exprlvl_3
-%type <data> exprlvl_4
+%type <type> type
+%type <content> number
+%type <content> literal
+%type <content> exprlvl_1
+%type <content> exprlvl_2
+%type <content> exprlvl_3
+%type <content> exprlvl_4
 
-%type<var> assignment
+%type <content> assignment
 
 /*
  * Declare Syntax
@@ -145,19 +103,19 @@
 
 %%
 program:	program declaration { printf (" -PROG DECLARATION- \n"); }
-        |       program assignment {checkVar((Variable*)$2); printf (" -PROG ASSIGN- \n"); }
+        |       program assignment {assignVar((Variable*)$2); printf (" -PROG ASSIGN- \n"); }
         |       program controlBlock { printf (" -PROG CTRL- \n"); }
         | ;
 
-declaration:    type VAR MISC_SEMI {insertVar(makeVar($1, $2.sval), E_UNDEF);}
+declaration:    type VAR MISC_SEMI {insertVar(makeVar($1, ((Data*)$2)->sval), E_UNDEF);}
         |       type assignment {insertVar((Variable*)$2, E_VAR);}
         |       CONST_DECL type assignment {insertVar((Variable*)$3, E_CONST);}
         |       type TYPE_ARRAY assignment {insertVar((Variable*)$3, E_ARR);};
 
-assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI {$$ = (void*)makeVar(INT, $1.sval);}
-        |       VAR ASSIGN LIT_CHAR MISC_SEMI {$$ = (void*)makeVar(CHAR, $1.sval);}
-        |       VAR ASSIGN LIT_STRING MISC_SEMI {$$ = (void*)makeVar(STRING, $1.sval);}
-        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI{$$ = (void*)makeVar(INT, $1.sval);};
+assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI {$$ = (void*)makeVar(INT, ((Data*)$1)->sval);}
+        |       VAR ASSIGN LIT_CHAR MISC_SEMI {$$ = (void*)makeVar(CHAR, ((Data*)$1)->sval);}
+        |       VAR ASSIGN LIT_STRING MISC_SEMI {$$ = (void*)makeVar(STRING, ((Data*)$1)->sval);}
+        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI{$$ = (void*)makeVar(INT, ((Data*)$1)->sval);};
 
 arraystruct:    arrayitems
         |       arrayitems ARR_SEP arraystruct;  
@@ -166,11 +124,11 @@ arrayitems:     exprlvl_1
         |       LIT_CHAR
         |       LIT_STRING 
 
-type:           TYPE_INT {$$=0;}
-        |       TYPE_FLOAT {$$=3;}
-        |       TYPE_CHAR {$$=1;}
-        |       TYPE_STRING {$$=4;}
-        |       TYPE_BOOL {$$=2;};
+type:           TYPE_INT {$$=INT;}
+        |       TYPE_FLOAT {$$=FLOAT;}
+        |       TYPE_CHAR {$$=CHAR;}
+        |       TYPE_STRING {$$=STRING;}
+        |       TYPE_BOOL {$$=BOOL;};
 
 
 exprlvl_1:      exprlvl_1 logicOperator exprlvl_2 {} 
@@ -189,13 +147,13 @@ exprlvl_4:      exprlvl_4 potOperator literal {}
 literal:        MISC_LP exprlvl_1 MISC_RP {}       
         |       LIT_BOOL {$$=$1;} 
         |       number {$$=$1;}
-        |       VAR {$$=$1;}; 
+        |       VAR {$$=(void*)getVar(((Data*)$1)->sval);}; 
 
 number:         LIT_INT {$$ = $1;}
-        |       LIT_FLOAT {printf("%f %d",$1.fval, $1.type); $$ = $1;}
-        |       LIT_ZERO {printf("%d %d", $1.ival, $1.type); $$ = $1;}
-        |       OP_SUB LIT_INT {$2.ival = -$2.ival; printf("%d",$2.ival); $$ = $2;}        /* negative number */
-        |       OP_SUB LIT_FLOAT {$2.fval = -$2.fval; printf("%f",$2.fval); $$ = $2;};
+        |       LIT_FLOAT {printf("%f %d",((Data*)$1)->fval, ((Data*)$1)->type); $$ = $1;}
+        |       LIT_ZERO {printf("%d %d", ((Data*)$1)->ival, ((Data*)$1)->type); $$ = $1;}
+        |       OP_SUB LIT_INT {((Data*)$2)->fval = -((Data*)$2)->ival; printf("%d",((Data*)$2)->ival); $$ = $2;}        /* negative number */
+        |       OP_SUB LIT_FLOAT {((Data*)$2)->fval = -((Data*)$2)->fval; printf("%f",((Data*)$2)->fval); $$ = $2;};
 
 lineOperator:   OP_ADD
         |       OP_SUB;
@@ -273,8 +231,7 @@ void insertVar(Variable* var, Flags flags){
     }
 }
 
-void checkVar(Variable* var){
-
+void assignVar(Variable* var){
     if(!root)
     {
         free(var);
@@ -307,21 +264,35 @@ void checkVar(Variable* var){
 }
 
 void printVars(){
-    Variable* tmp;
-    tmp = root;
-    int varNum = 0;
-    while(tmp){
-        printf("%d Type: %d Name: %s Flags: %d\n", varNum, tmp->type, tmp->name, tmp->flags);
-        varNum++;
+        Variable* tmp;
+        tmp = root;
+        int varNum = 0;
+        while(tmp){
+                printf("%d Type: %d Name: %s Flags: %d\n", varNum, tmp->type, tmp->name, tmp->flags);
+                varNum++;
         if(tmp->next)
-            tmp = tmp->next;
+                tmp = tmp->next;
         else
-            break;
+                break;
     }
 }
 
 
-
+Variable* getVar(char* name){
+        Variable* tmp;
+        tmp = root;
+        while(tmp){
+                if(strcmp(tmp->name, name) == 0){
+                    return tmp;
+                }
+                if(tmp->next)
+                    tmp = tmp->next;
+                else
+                    break;
+        }
+        yyerror("Fehlermeldung, Var (rechte Seite) nicht deklariert");
+        exit(-1);        
+}
 
 
 

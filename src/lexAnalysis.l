@@ -2,12 +2,20 @@
 %{
 	#include <stdio.h>
 	#include "y.tab.h"
+        #include "thunderstruct.h"
 
         /*
          * TODO Create dictionary for Variable name & content transfer to yacc
          */
         extern int lineno;
+
+        //Forward-Declaration
+        Data* createFloatLiteral(int type, float val);
+        Data* createIntLiteral(int type, int val);
+        Data* createStringLiteral(int type, char* val);
 %}
+
+
 		
 %%
 
@@ -50,19 +58,19 @@
 
  /* XOR */
 
-0			{yylval.data.type = 0; yylval.data.ival = 0; return LIT_ZERO;}
-[1-9][0-9]*		{yylval.data.type = 0; yylval.data.ival = atoi(yytext); return LIT_INT;}
-"'"[a-zA-Z0-9_ ]?"'"    {yylval.data.type = 1; yylval.data.sval = strdup(yytext); return LIT_CHAR;}
-("TRUE"|"true")         {yylval.data.type = 2; yylval.data.ival = 1; return LIT_BOOL;}
-("FALSE"|"false")       {yylval.data.type = 2; yylval.data.ival = 0; return LIT_BOOL;}
-([1-9][0-9]*|0)\.[0-9]* {yylval.data.type = 3; yylval.data.fval = atof(yytext); return LIT_FLOAT;}
-"\""[a-zA-Z0-9_ ]*"\""  {yylval.data.type = 4; yylval.data.sval = strdup(yytext); return LIT_STRING;}
+0			{yylval.content = (void*)createIntLiteral(INT,0); return LIT_ZERO;}
+[1-9][0-9]*		{yylval.content = (void*)createIntLiteral(INT,atoi(yytext)); return LIT_INT;}
+"'"[a-zA-Z0-9_ ]?"'"    {yylval.content = (void*)createStringLiteral(CHAR,strdup(yytext)); return LIT_CHAR;}
+("TRUE"|"true")         {yylval.content = (void*)createIntLiteral(BOOL,1); return LIT_BOOL;}
+("FALSE"|"false")       {yylval.content = (void*)createIntLiteral(BOOL,0); return LIT_BOOL;}
+([1-9][0-9]*|0)\.[0-9]* {yylval.content = (void*)createFloatLiteral(FLOAT,atof(yytext)); return LIT_FLOAT;}
+"\""[a-zA-Z0-9_ ]*"\""  {yylval.content = (void*)createStringLiteral(STRING,strdup(yytext)); return LIT_STRING;}
 
 "{"                     return ARR_LP;
 "}"                     return ARR_RP;
 ","                     return ARR_SEP;
 
-[a-z][a-zA-Z0-9_-]*	{yylval.data.type = -1; yylval.data.sval = strdup(yytext); return VAR;}
+[a-z][a-zA-Z0-9_-]*	{yylval.content = (void*)createStringLiteral(-1,strdup(yytext)); return VAR;}
 			
 "("			return MISC_LP;
 ")"			return MISC_RP;
@@ -78,3 +86,24 @@
                         }
 
 %%
+
+Data* createIntLiteral(int type, int val){
+        Data* litData = (Data*)malloc(sizeof(Data));
+        litData->type = type;
+        litData->ival = val;
+        return litData;
+} 
+
+Data* createFloatLiteral(int type, float val){
+        Data* litData = (Data*)malloc(sizeof(Data));
+        litData->type = type;
+        litData->fval = val;
+        return litData;
+} 
+
+Data* createStringLiteral(int type, char* val){
+        Data* litData = (Data*)malloc(sizeof(Data));
+        litData->type = type;
+        litData->sval = val;
+        return litData;
+}
