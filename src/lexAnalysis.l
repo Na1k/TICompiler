@@ -64,13 +64,13 @@
 ("TRUE"|"true")         {yylval.content = (void*)createIntLiteral(BOOL,1); return LIT_BOOL;}
 ("FALSE"|"false")       {yylval.content = (void*)createIntLiteral(BOOL,0); return LIT_BOOL;}
 ([1-9][0-9]*|0)\.[0-9]* {yylval.content = (void*)createFloatLiteral(FLOAT,atof(yytext)); return LIT_FLOAT;}
-"\""[a-zA-Z0-9_ ]*"\""  {yylval.content = (void*)createStringLiteral(STRING,strdup(yytext)); return LIT_STRING;}
+"\"".*"\""              {yylval.content = (void*)createStringLiteral(STRING,strdup(yytext)); return LIT_STRING;}
 
 "{"                     return ARR_LP;
 "}"                     return ARR_RP;
 ","                     return ARR_SEP;
 
-[a-z][a-zA-Z0-9_-]*	{yylval.content = (void*)createStringLiteral(-1,strdup(yytext)); return VAR;}
+[a-zA-Z_][a-zA-Z0-9_-]*	{yylval.content = (void*)createStringLiteral(-1,strdup(yytext)); return VAR;}
 			
 "("			return MISC_LP;
 ")"			return MISC_RP;
@@ -79,7 +79,9 @@
 				lineno++;
 			}
 [ \t]			;
-"//".*\n                 printf("COMMENT\n");
+"//".*\n                { lineno++; printf("COMMENT\n");}         
+
+"$debug"                return DEBUG;  
 
 .			{
                                 return ERROR;

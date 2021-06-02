@@ -85,6 +85,7 @@
 %token MISC_RP
 %token MISC_SEMI
 
+%token DEBUG
 %token ERROR
 
 %type <type> type
@@ -105,7 +106,8 @@
 program:	program declaration { printf (" -PROG DECLARATION- \n"); }
         |       program assignment {assignVar((Variable*)$2); printf (" -PROG ASSIGN- \n"); }
         |       program controlBlock { printf (" -PROG CTRL- \n"); }
-        | ;
+        |       program DEBUG MISC_LP LIT_STRING MISC_RP MISC_SEMI { printf("debug: %s \n", ((Data*)$4)->sval);}
+        |;
 
 declaration:    type VAR MISC_SEMI {insertVar(makeVar($1, ((Data*)$2)->sval), E_UNDEF);}
         |       type assignment {insertVar((Variable*)$2, E_VAR);}
@@ -131,7 +133,7 @@ type:           TYPE_INT {$$=INT;}
         |       TYPE_BOOL {$$=BOOL;};
 
 
-exprlvl_1:      exprlvl_1 logicOperator exprlvl_2 {} 
+exprlvl_1:      exprlvl_1 logicOperator exprlvl_2 {}
         |       exprlvl_2 {$$=$1;};
 
 exprlvl_2:      exprlvl_2 lineOperator exprlvl_3 {}
@@ -144,10 +146,12 @@ exprlvl_4:      exprlvl_4 potOperator literal {}
         |       literal {$$=$1;};
 
 
-literal:        MISC_LP exprlvl_1 MISC_RP {}       
+literal:        MISC_LP exprlvl_1 MISC_RP {}
+        |       LOGIC_NOT MISC_LP exprlvl_1 MISC_RP {}
         |       LIT_BOOL {$$=$1;} 
         |       number {$$=$1;}
-        |       VAR {$$=(void*)getVar(((Data*)$1)->sval);}; 
+        |       VAR {$$=(void*)getVar(((Data*)$1)->sval);} 
+        |       OP_SUB VAR {};
 
 number:         LIT_INT {$$ = $1;}
         |       LIT_FLOAT {printf("%f %d",((Data*)$1)->fval, ((Data*)$1)->type); $$ = $1;}
@@ -244,7 +248,8 @@ void assignVar(Variable* var){
 
             while(varOld){
                 if(strcmp(varOld->name, var->name) == 0){
-                    if(varOld->flags & E_CONST){
+                    if(varOld->flags & E_CONST)
+                    {
                         free(var);
                         yyerror("Fehlermeldung, Neuzuweisung Konstante - pfui");
                         exit(-1);
