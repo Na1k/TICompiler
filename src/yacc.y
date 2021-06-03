@@ -1,28 +1,23 @@
 %{
         #include <stdio.h>
         #include <string.h>
+        #include <stdarg.h>
         #include <stdlib.h>
         #include "thunderstruct.h"
-        int yylex(void);
-        void yyerror(char*);
 
-/*
- * TODO Create dictionary for Variable name & content transfer to yacc
- * constants
- */
         int lineno = 1;
-
-
-
-
         Variable* root = NULL;
 
         //Forward-Declaration
-        Variable* makeVar(int type, char* name);
+        int yylex(void);
+        void yyerror(char*);
+
+        Variable* makeVar(int type, char* name);        //create a Variable construct. Used to store in Datastructure
         void insertVar(Variable* var, Flags flags);     //insert Var into struct "Variable"
         void assignVar(Variable* var);                  //checks if Var exists for assignment
         void printVars();                               //print all nodes in "Variable" (last action of program, called in main)
-        Variable* getVar(char* name);
+        Variable* getVar(char* name);                   //retrieve Var from datastructure for insertion on right hand side of assignment
+        SyntaxNode* makeNode(int nodeType, int valueType, ...);
 %}
 
 
@@ -198,6 +193,9 @@ void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
 
 int main(void) { 
 	yyparse();
+        makeNode(0,0,4);
+        makeNode(0,1,4.3);
+        makeNode(0,2,"0,1 Promille");
         printVars();
 	return 0;
 }
@@ -299,6 +297,36 @@ Variable* getVar(char* name){
         exit(-1);        
 }
 
+//makenode(type, datentyp, value, lchild, rchild);
+//makenode(type, valType, val);
+
+SyntaxNode* makeNode(int nodeType, int valueType, ...){
+    va_list args; // 👈 check it out!
+    SyntaxNode* node blabla malloc etc pp;
+    va_start(args, valueType);
+
+    node->type = ??; // 👈 hier smartness einfügen
+    node->valueType = valueType;
+
+    switch (valueType) {
+    case 0:
+        node->ival = va_arg(args, int);
+        ...;
+    case 1:
+        printf("%f\n", va_arg(args, double));
+        break;
+    case 2:
+        printf("%s\n", va_arg(args, char*));
+        break;
+    }
+
+    node-> lchild = va_arg(args, SyntaxNode*);
+    ...;
+    int x = va_arg(args, int);
+    printf("%d\n", x);
+    va_end(args);
+    return NULL;
+}
 
 
 

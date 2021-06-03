@@ -1,2 +1,1 @@
 bool so;
-bool a = !(true) + !(false+5) | so;
