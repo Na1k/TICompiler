@@ -1,34 +1,31 @@
 %{
         #include <stdio.h>
         #include <string.h>
+        #include <stdarg.h>
         #include <stdlib.h>
         #include "thunderstruct.h"
-        int yylex(void);
-        void yyerror(char*);
 
-/*
- * TODO Create dictionary for Variable name & content transfer to yacc
- * constants
- */
         int lineno = 1;
-
-
-
-
         Variable* root = NULL;
 
         //Forward-Declaration
-        Variable* makeVar(int type, char* name);
+        int yylex(void);
+        void yyerror(char*);
+
+        Variable* makeVar(int type, char* name);        //create a Variable construct. Used to store in Datastructure
         void insertVar(Variable* var, Flags flags);     //insert Var into struct "Variable"
         void assignVar(Variable* var);                  //checks if Var exists for assignment
         void printVars();                               //print all nodes in "Variable" (last action of program, called in main)
-        Variable* getVar(char* name);
+        Variable* getVar(char* name);                   //retrieve Var from datastructure for insertion on right hand side of assignment
+        SyntaxNode* makeNode(int nodeType, int valueType, ...);
+        float getNumVal(Data* data);
 %}
 
 
 %union {
         void* content;
         int type;
+        char* opString;
 }
 
 %token OP_ADD
@@ -98,6 +95,12 @@
 
 %type <content> assignment
 
+%type <opString> lineOperator
+%type <opString> pointOperator
+%type <opString> potOperator
+%type <opString> logicOperator
+
+
 /*
  * Declare Syntax
  */
@@ -133,23 +136,23 @@ type:           TYPE_INT {$$=INT;}
         |       TYPE_BOOL {$$=BOOL;};
 
 
-exprlvl_1:      exprlvl_1 logicOperator exprlvl_2 {}
+exprlvl_1:      exprlvl_1 logicOperator exprlvl_2 {$$ = makeNode(E_OPERATION, STRING, $2, $1, $3);}
         |       exprlvl_2 {$$=$1;};
 
-exprlvl_2:      exprlvl_2 lineOperator exprlvl_3 {}
+exprlvl_2:      exprlvl_2 lineOperator exprlvl_3 {$$ = makeNode(E_OPERATION, STRING, $2, $1, $3);}
         |       exprlvl_3 {$$=$1;};
 
-exprlvl_3:      exprlvl_3 pointOperator exprlvl_4 {}
+exprlvl_3:      exprlvl_3 pointOperator exprlvl_4 {$$ = makeNode(E_OPERATION, STRING, $2, $1, $3);}
         |       exprlvl_4 {$$=$1;};   
 
-exprlvl_4:      exprlvl_4 potOperator literal {}
+exprlvl_4:      exprlvl_4 potOperator literal {$$ = makeNode(E_OPERATION, STRING, $2, $1, $3);}
         |       literal {$$=$1;};
 
 
-literal:        MISC_LP exprlvl_1 MISC_RP {}
-        |       LOGIC_NOT MISC_LP exprlvl_1 MISC_RP {}
-        |       LIT_BOOL {$$=$1;} 
-        |       number {$$=$1;}
+literal:        MISC_LP exprlvl_1 MISC_RP {$$ = $2;}
+        |       LOGIC_NOT MISC_LP exprlvl_1 MISC_RP {$$ = makeNode(E_OPERATION, STRING, "!", $3);}
+        |       LIT_BOOL {$$ = makeNode(E_VALUE, BOOL, $1);} 
+        |       number {$$ = makeNode(E_VALUE, ((Data*)$1)->type), getNumVal((Data*)$1);}
         |       VAR {$$=(void*)getVar(((Data*)$1)->sval);} 
         |       OP_SUB VAR {};
 
@@ -159,23 +162,23 @@ number:         LIT_INT {$$ = $1;}
         |       OP_SUB LIT_INT {((Data*)$2)->fval = -((Data*)$2)->ival; printf("%d",((Data*)$2)->ival); $$ = $2;}        /* negative number */
         |       OP_SUB LIT_FLOAT {((Data*)$2)->fval = -((Data*)$2)->fval; printf("%f",((Data*)$2)->fval); $$ = $2;};
 
-lineOperator:   OP_ADD
-        |       OP_SUB;
+lineOperator:   OP_ADD {$$ = "+";} 
+        |       OP_SUB {$$ = "-";};
 
-pointOperator:  OP_MUL
-        |       OP_DIV
-        |       OP_MOD;
+pointOperator:  OP_MUL {$$ = "*";}
+        |       OP_DIV {$$ = "/";}
+        |       OP_MOD {$$ = "%";};
 
-potOperator:    OP_POT;
+potOperator:    OP_POT {$$ = "^";};
 
-logicOperator:  COMP_EQL
-        |       COMP_LT
-        |       COMP_LE
-        |       COMP_GT
-        |       COMP_GE
+logicOperator:  COMP_EQL {$$ = "==";}
+        |       COMP_LT {$$ = "<";}
+        |       COMP_LE {$$ = ">=";}
+        |       COMP_GT {$$ = ">";}
+        |       COMP_GE {$$ = ">=";}
 
-        |       LOGIC_AND
-        |       LOGIC_OR;
+        |       LOGIC_AND {$$ = "&";}
+        |       LOGIC_OR {$$ = "|";};
 
 /* if / while / control-structures */
 
@@ -198,6 +201,9 @@ void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
 
 int main(void) { 
 	yyparse();
+        makeNode(E_VALUE,0,4);
+        makeNode(E_VALUE,1,4.3);
+        makeNode(E_OPERATION,-1,"+");
         printVars();
 	return 0;
 }
@@ -299,8 +305,56 @@ Variable* getVar(char* name){
         exit(-1);        
 }
 
+//makeNode(type, valType, value, lchild, rchild);       <-- Inner Node with 2 Children
+//makeNode(type, valType, value, lchild);               <-- Inner Node with 1 Child
+//makeNode(type, valType, value);                       <-- Leaf-Definition
 
+SyntaxNode* makeNode(int nodeType, int valueType, ...){
+        va_list args;               // 👈 check it out!
+        va_start(args, valueType);
+        SyntaxNode* node = (SyntaxNode*) malloc(sizeof(SyntaxNode));
 
+        node->nodeType = nodeType;            // 👈 ENUM -> NodeType
+        node->valueType = valueType;
+
+        switch (valueType) {
+        case BOOL:
+        case INT:
+            node->ival = va_arg(args, int);
+            break;
+        case FLOAT:
+            node->fval = (float)va_arg(args, double);
+            break;
+        case STRING:
+            node->sval = va_arg(args, char*);
+            break;
+        }
+
+        SyntaxNode* leftChild = va_arg(args, SyntaxNode*);
+        SyntaxNode* rightChild = va_arg(args, SyntaxNode*);
+
+        if(leftChild)   // != NULL
+                node-> leftChild = leftChild;
+        
+        if(rightChild)  // != NULL
+                node-> rightChild = rightChild;
+
+        va_end(args);
+
+        return node;
+}
+
+float getNumVal(Data* data){
+        if(data->type == INT)
+        {
+                return (float)data->ival;
+        }
+        else if(data->type == FLOAT)
+        {
+                return data->fval;
+        }
+        return 0;
+}
 
 
 
