@@ -16,6 +16,11 @@
                 E_UNDEF = 0x08          //1000
         } Flags;
 
+        typedef enum NodeType {
+                E_OPERATION = 0,
+                E_VALUE
+        } NodeType;
+
         typedef struct SyntaxNode {
                 int nodeType;               //identifiziert die node selbst (eg Int/eqlvl1 etc...)
                 int valueType;
