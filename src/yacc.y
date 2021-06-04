@@ -6,7 +6,8 @@
         #include "thunderstruct.h"
 
         int lineno = 1;
-        Variable* root = NULL;
+        Variable* varRoot = NULL;
+        SyntaxNode* progRoot = NULL;
 
         //Forward-Declaration
         int yylex(void);
@@ -19,6 +20,8 @@
         Variable* getVar(char* name);                   //retrieve Var from datastructure for insertion on right hand side of assignment
         SyntaxNode* makeNode(int nodeType, int valueType, ...);
         float getNumVal(Data* data);
+        void printNode(SyntaxNode* node);
+        void printProgTree(SyntaxNode* prog);
 %}
 
 
@@ -93,34 +96,73 @@
 %type <content> exprlvl_3
 %type <content> exprlvl_4
 
+%type <content> program
+
+%type <content> declaration
 %type <content> assignment
+
+%type <content> arraystruct
+%type <content> arrayitems
 
 %type <opString> lineOperator
 %type <opString> pointOperator
 %type <opString> potOperator
 %type <opString> logicOperator
 
-
 /*
  * Declare Syntax
  */
 
 %%
-program:	program declaration { printf (" -PROG DECLARATION- \n"); }
-        |       program assignment {assignVar((Variable*)$2); printf (" -PROG ASSIGN- \n"); }
-        |       program controlBlock { printf (" -PROG CTRL- \n"); }
+program:	program declaration
+                {
+//                    char* varName;
+                    printf (" -PROG DECLARATION- ())\n");
+                    SyntaxNode* node = makeNode(E_OPERATION, STRING, "Prog", $1, $2);
+                    progRoot = node;
+                    $$ = node;
+                }
+        |       program assignment
+                {
+                    printf (" -PROG ASSIGN- \n");
+                    SyntaxNode* node = makeNode(E_OPERATION, STRING, "Prog", $1, $2);
+                    progRoot = node;
+                    $$ = node;
+                    //assignVar((Variable*)$2)
+                }
+        |       program controlBlock
+                {
+//                     SyntaxNode* ret = makeNode(E_OPERATION, STRING, "Prog", $1, $2);
+                }
+
         |       program DEBUG MISC_LP LIT_STRING MISC_RP MISC_SEMI { printf("debug: %s \n", ((Data*)$4)->sval);}
-        |;
+        |       {$$ = NULL; printf(" -EMPTY- \n");};
 
-declaration:    type VAR MISC_SEMI {insertVar(makeVar($1, ((Data*)$2)->sval), E_UNDEF);}
-        |       type assignment {insertVar((Variable*)$2, E_VAR);}
-        |       CONST_DECL type assignment {insertVar((Variable*)$3, E_CONST);}
-        |       type TYPE_ARRAY assignment {insertVar((Variable*)$3, E_ARR);};
+declaration:    type VAR MISC_SEMI
+                {
+                    $$ = makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $1), makeNode(E_VALUE, VARIABLE, ((Data*)$2)->sval));
+                    insertVar(makeVar($1, ((Data*)$2)->sval), E_UNDEF);
+                }
+        |       type assignment
+                {
+                    $$ = makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $1), $2);
+                    insertVar(makeVar(((SyntaxNode*)$2)->rightChild->expressionType,((SyntaxNode*)$2)->leftChild->sval), E_VAR);
+                }
+        |       CONST_DECL type assignment
+                {
+                    $$ = makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $2), $3);
+                    insertVar(makeVar(((SyntaxNode*)$3)->rightChild->expressionType, ((SyntaxNode*)$3)->leftChild->sval), E_CONST);
+                }
+        |       type TYPE_ARRAY assignment
+                {
+                    $$ = makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $1), $3);
+                    insertVar(makeVar(((SyntaxNode*)$3)->rightChild->expressionType, ((SyntaxNode*)$3)->leftChild->sval), E_ARR);
+                };
 
-assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI {$$ = (void*)makeVar(INT, ((Data*)$1)->sval);}
-        |       VAR ASSIGN LIT_CHAR MISC_SEMI {$$ = (void*)makeVar(CHAR, ((Data*)$1)->sval);}
-        |       VAR ASSIGN LIT_STRING MISC_SEMI {$$ = (void*)makeVar(STRING, ((Data*)$1)->sval);}
-        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI{$$ = (void*)makeVar(INT, ((Data*)$1)->sval);};
+assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI {$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), $3);}
+        |       VAR ASSIGN LIT_CHAR MISC_SEMI {$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), makeNode(E_VALUE, CHAR, ((Data*)$3)->sval));}
+        |       VAR ASSIGN LIT_STRING MISC_SEMI {$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), makeNode(E_VALUE, STRING, ((Data*)$3)->sval));}
+        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI{$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), $4);}; //Attenzione!
 
 arraystruct:    arrayitems
         |       arrayitems ARR_SEP arraystruct;  
@@ -153,14 +195,14 @@ literal:        MISC_LP exprlvl_1 MISC_RP {$$ = $2;}
         |       LOGIC_NOT MISC_LP exprlvl_1 MISC_RP {$$ = makeNode(E_OPERATION, STRING, "!", $3);}
         |       LIT_BOOL {$$ = makeNode(E_VALUE, BOOL, $1);} 
         |       number {$$ = makeNode(E_VALUE, ((Data*)$1)->type), getNumVal((Data*)$1);}
-        |       VAR {$$=(void*)getVar(((Data*)$1)->sval);} 
-        |       OP_SUB VAR {};
+        |       VAR {$$ = makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval); } 
+        |       OP_SUB VAR {$$ = makeNode(E_OPERATION, STRING, "-", makeNode(E_VALUE, VARIABLE, ((Data*)$2)->sval)); };
 
 number:         LIT_INT {$$ = $1;}
-        |       LIT_FLOAT {printf("%f %d",((Data*)$1)->fval, ((Data*)$1)->type); $$ = $1;}
-        |       LIT_ZERO {printf("%d %d", ((Data*)$1)->ival, ((Data*)$1)->type); $$ = $1;}
-        |       OP_SUB LIT_INT {((Data*)$2)->fval = -((Data*)$2)->ival; printf("%d",((Data*)$2)->ival); $$ = $2;}        /* negative number */
-        |       OP_SUB LIT_FLOAT {((Data*)$2)->fval = -((Data*)$2)->fval; printf("%f",((Data*)$2)->fval); $$ = $2;};
+        |       LIT_FLOAT {$$ = $1;}
+        |       LIT_ZERO {$$ = $1;}
+        |       OP_SUB LIT_INT {((Data*)$2)->ival = -((Data*)$2)->ival; $$ = $2;}        /* negative number */
+        |       OP_SUB LIT_FLOAT {((Data*)$2)->fval = -((Data*)$2)->fval; $$ = $2;};
 
 lineOperator:   OP_ADD {$$ = "+";} 
         |       OP_SUB {$$ = "-";};
@@ -201,10 +243,8 @@ void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
 
 int main(void) { 
 	yyparse();
-        makeNode(E_VALUE,0,4);
-        makeNode(E_VALUE,1,4.3);
-        makeNode(E_OPERATION,-1,"+");
         printVars();
+        printProgTree(progRoot);
 	return 0;
 }
 
@@ -218,13 +258,13 @@ Variable* makeVar(int varType, char* varName){
 
 void insertVar(Variable* var, Flags flags){
     var->flags = flags;
-    if(!root)
+    if(!varRoot)
     {
-            root = var;
+            varRoot = var;
     }
     else
     {
-            Variable* tmp = root;
+            Variable* tmp = varRoot;
 
             while(tmp){
                 if(strcmp(tmp->name, var->name) == 0){
@@ -242,7 +282,7 @@ void insertVar(Variable* var, Flags flags){
 }
 
 void assignVar(Variable* var){
-    if(!root)
+    if(!varRoot)
     {
         free(var);
         yyerror("Fehlermeldung, Var nicht deklariert(in fact, no vars are deklariert)");
@@ -250,7 +290,7 @@ void assignVar(Variable* var){
     }
     else
     {
-            Variable* varOld = root;
+            Variable* varOld = varRoot;
 
             while(varOld){
                 if(strcmp(varOld->name, var->name) == 0){
@@ -276,7 +316,7 @@ void assignVar(Variable* var){
 
 void printVars(){
         Variable* tmp;
-        tmp = root;
+        tmp = varRoot;
         int varNum = 0;
         while(tmp){
                 printf("%d Type: %d Name: %s Flags: %d\n", varNum, tmp->type, tmp->name, tmp->flags);
@@ -291,7 +331,7 @@ void printVars(){
 
 Variable* getVar(char* name){
         Variable* tmp;
-        tmp = root;
+        tmp = varRoot;
         while(tmp){
                 if(strcmp(tmp->name, name) == 0){
                     return tmp;
@@ -316,6 +356,7 @@ SyntaxNode* makeNode(int nodeType, int valueType, ...){
 
         node->nodeType = nodeType;            // 👈 ENUM -> NodeType
         node->valueType = valueType;
+        node->expressionType = 69;
 
         switch (valueType) {
         case BOOL:
@@ -325,9 +366,13 @@ SyntaxNode* makeNode(int nodeType, int valueType, ...){
         case FLOAT:
             node->fval = (float)va_arg(args, double);
             break;
+        case CHAR:
         case STRING:
+        case VARIABLE:
             node->sval = va_arg(args, char*);
             break;
+        default:
+            yyerror("Node ValueType error!");
         }
 
         SyntaxNode* leftChild = va_arg(args, SyntaxNode*);
@@ -335,9 +380,13 @@ SyntaxNode* makeNode(int nodeType, int valueType, ...){
 
         if(leftChild)   // != NULL
                 node-> leftChild = leftChild;
+        else
+                node-> leftChild = NULL;
         
         if(rightChild)  // != NULL
                 node-> rightChild = rightChild;
+        else
+                node-> rightChild = NULL;
 
         va_end(args);
 
@@ -355,6 +404,52 @@ float getNumVal(Data* data){
         }
         return 0;
 }
+
+
+void printProgTree(SyntaxNode* prog){
+    if(!prog){
+        printf("  empty node\n");
+        return;
+    }
+
+    char* next = "null";
+    if(prog->leftChild){
+        if(prog->leftChild->nodeType == E_OPERATION)next = prog->leftChild->sval;
+        else if(prog->leftChild->nodeType == E_VALUE)next = "Value";
+    }
+    printf("  stepping down into %s\n", next);
+    printProgTree(prog->leftChild);
+
+    printNode(prog);
+
+    printf("trying rchild\n");
+    char* rch = "null";
+    if(prog->rightChild){
+        if(prog->rightChild->nodeType == E_OPERATION)rch = prog->rightChild->sval;
+        else if(prog->rightChild->nodeType == E_VALUE)rch = "Value";
+    }
+    printf("rchild is: %s\n", rch);
+    printProgTree(prog->rightChild);
+
+    printf("  stepping up\n");
+}
+
+void printNode(SyntaxNode* node){
+    if(node->nodeType == E_OPERATION)
+    {
+        printf("--Operation--\n");
+        printf("valueType(should be 4): %d\n", node->valueType);
+        printf("opString: %s\n", node->sval);
+    }
+    else if(node->nodeType == E_VALUE)
+    {
+        printf("--Value--\n");
+        printf("valueType: %d\n", node->valueType);
+    }
+    printf("end of node\n");
+    printf("\n");
+}
+
 
 
 
