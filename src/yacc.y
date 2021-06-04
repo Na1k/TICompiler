@@ -95,11 +95,13 @@
 
 %type <content> assignment
 
+%type <content> arraystruct
+%type <content> arrayitems
+
 %type <opString> lineOperator
 %type <opString> pointOperator
 %type <opString> potOperator
 %type <opString> logicOperator
-
 
 /*
  * Declare Syntax
@@ -112,15 +114,15 @@ program:	program declaration { printf (" -PROG DECLARATION- \n"); }
         |       program DEBUG MISC_LP LIT_STRING MISC_RP MISC_SEMI { printf("debug: %s \n", ((Data*)$4)->sval);}
         |;
 
-declaration:    type VAR MISC_SEMI {insertVar(makeVar($1, ((Data*)$2)->sval), E_UNDEF);}
-        |       type assignment {insertVar((Variable*)$2, E_VAR);}
-        |       CONST_DECL type assignment {insertVar((Variable*)$3, E_CONST);}
-        |       type TYPE_ARRAY assignment {insertVar((Variable*)$3, E_ARR);};
+declaration:    type VAR MISC_SEMI {makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $1), makeNode(E_VALUE, VARIABLE, ((Data*)$2)->sval)); insertVar(makeVar($1, ((Data*)$2)->sval), E_UNDEF);}
+        |       type assignment {makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $1), $2);} //insertVar((Variable*)$2, E_VAR);
+        |       CONST_DECL type assignment {makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $2), $3);}    //insertVar((Variable*)$3, E_CONST);}
+        |       type TYPE_ARRAY assignment {makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $1), $3);};     //insertVar((Variable*)$3, E_ARR);};
 
-assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI {$$ = (void*)makeVar(INT, ((Data*)$1)->sval);}
-        |       VAR ASSIGN LIT_CHAR MISC_SEMI {$$ = (void*)makeVar(CHAR, ((Data*)$1)->sval);}
-        |       VAR ASSIGN LIT_STRING MISC_SEMI {$$ = (void*)makeVar(STRING, ((Data*)$1)->sval);}
-        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI{$$ = (void*)makeVar(INT, ((Data*)$1)->sval);};
+assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI {$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), $3);}
+        |       VAR ASSIGN LIT_CHAR MISC_SEMI {$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), makeNode(E_VALUE, CHAR, ((Data*)$3)->sval));}
+        |       VAR ASSIGN LIT_STRING MISC_SEMI {$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), makeNode(E_VALUE, STRING, ((Data*)$3)->sval));}
+        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI{$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), $4);}; //Attenzione!
 
 arraystruct:    arrayitems
         |       arrayitems ARR_SEP arraystruct;  
@@ -153,14 +155,14 @@ literal:        MISC_LP exprlvl_1 MISC_RP {$$ = $2;}
         |       LOGIC_NOT MISC_LP exprlvl_1 MISC_RP {$$ = makeNode(E_OPERATION, STRING, "!", $3);}
         |       LIT_BOOL {$$ = makeNode(E_VALUE, BOOL, $1);} 
         |       number {$$ = makeNode(E_VALUE, ((Data*)$1)->type), getNumVal((Data*)$1);}
-        |       VAR {$$=(void*)getVar(((Data*)$1)->sval);} 
-        |       OP_SUB VAR {};
+        |       VAR {$$ = makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval); } 
+        |       OP_SUB VAR {$$ = makeNode(E_OPERATION, STRING, "-", makeNode(E_VALUE, VARIABLE, ((Data*)$2)->sval)); };
 
 number:         LIT_INT {$$ = $1;}
-        |       LIT_FLOAT {printf("%f %d",((Data*)$1)->fval, ((Data*)$1)->type); $$ = $1;}
-        |       LIT_ZERO {printf("%d %d", ((Data*)$1)->ival, ((Data*)$1)->type); $$ = $1;}
-        |       OP_SUB LIT_INT {((Data*)$2)->fval = -((Data*)$2)->ival; printf("%d",((Data*)$2)->ival); $$ = $2;}        /* negative number */
-        |       OP_SUB LIT_FLOAT {((Data*)$2)->fval = -((Data*)$2)->fval; printf("%f",((Data*)$2)->fval); $$ = $2;};
+        |       LIT_FLOAT {$$ = $1;}
+        |       LIT_ZERO {$$ = $1;}
+        |       OP_SUB LIT_INT {((Data*)$2)->ival = -((Data*)$2)->ival; $$ = $2;}        /* negative number */
+        |       OP_SUB LIT_FLOAT {((Data*)$2)->fval = -((Data*)$2)->fval; $$ = $2;};
 
 lineOperator:   OP_ADD {$$ = "+";} 
         |       OP_SUB {$$ = "-";};
@@ -325,6 +327,7 @@ SyntaxNode* makeNode(int nodeType, int valueType, ...){
         case FLOAT:
             node->fval = (float)va_arg(args, double);
             break;
+        case CHAR:
         case STRING:
             node->sval = va_arg(args, char*);
             break;
@@ -335,9 +338,13 @@ SyntaxNode* makeNode(int nodeType, int valueType, ...){
 
         if(leftChild)   // != NULL
                 node-> leftChild = leftChild;
+        else
+                node-> leftChild = NULL;
         
         if(rightChild)  // != NULL
                 node-> rightChild = rightChild;
+        else
+                node-> rightChild = NULL;
 
         va_end(args);
 

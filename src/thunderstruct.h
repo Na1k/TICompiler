@@ -6,7 +6,9 @@
                 CHAR,
                 BOOL,
                 FLOAT,
-                STRING
+                STRING,
+                VARIABLE,
+                ARRAY
         } Type;
 
         typedef enum Flags {
