@@ -25,7 +25,7 @@
 "bool"                  return TYPE_BOOL;
 "float"                 return TYPE_FLOAT;
 "string"                return TYPE_STRING;
-"["[1-9][0-9]*"]"       return TYPE_ARRAY;                    
+"[]"       return TYPE_ARRAY;
 
 ("const"|"CONST")       return CONST_DECL;
 
