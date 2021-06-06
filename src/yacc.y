@@ -21,7 +21,7 @@
         void assignVar(Variable* var);                  //checks if Var exists for assignment
         void printVars();                               //print all nodes in "Variable" (last action of program, called in main)
         Variable* getVar(char* name);                   //retrieve Var from datastructure for insertion on right hand side of assignment
-        SyntaxNode* makeNode(int nodeType, int valueType, ...);
+        SyntaxNode* makeNode(int nodeType, int valueType, int childNum, ...);
         float getNumVal(Data* data);
         void printNode(SyntaxNode* node);
         void printProgTree(SyntaxNode* prog);
@@ -276,12 +276,12 @@ void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
 
 int main(void) { 
         FILE *fh;
-        fh = fopen("/home/moritz/flex/TICompiler/src/TestInput", "r");
+        fh = fopen("/home/moritz/flex/TICompiler/src/input", "r");
         yyin = fh;
         dprint("\n\n---NODE CREATION--\n\n");
         yyparse();
         dprint("\n\n---VAR LIST--\n\n");
-        printVars();
+//        printVars();
         dprint("\n\n---SYNTAX TREE--\n\n");
         printProgTree(progRoot);
 	return 0;
@@ -388,9 +388,9 @@ Variable* getVar(char* name){
 //makeNode(type, valType, value, lchild);               <-- Inner Node with 1 Child
 //makeNode(type, valType, value);                       <-- Leaf-Definition
 
-SyntaxNode* makeNode(int nodeType, int valueType, ...){
+SyntaxNode* makeNode(int nodeType, int valueType, int childNum, ...){
         va_list args;               // 👈 check it out!
-        va_start(args, valueType);
+        va_start(args, childNum);
         SyntaxNode* node = (SyntaxNode*) malloc(sizeof(SyntaxNode));
 
         node->nodeType = nodeType;            // 👈 ENUM -> NodeType
@@ -400,7 +400,7 @@ SyntaxNode* makeNode(int nodeType, int valueType, ...){
         switch (valueType) {
         case BOOL:
         case INT:
-            node->ival = va_arg(args, int);
+            node->ival = (int)va_arg(args, double);
             break;
         case FLOAT:
             node->fval = (float)va_arg(args, double);
@@ -423,29 +423,33 @@ SyntaxNode* makeNode(int nodeType, int valueType, ...){
 
         if(leftChild)   // != NULL
         {
-                node-> leftChild = leftChild;
+                node->leftChild = leftChild;
 #ifdef IGUANADEBUG
         children++;
 #endif
         }
         else
-                node-> leftChild = NULL;
+                node->leftChild = NULL;
         
         if(rightChild)  // != NULL
         {
-                node-> rightChild = rightChild;
+                node->rightChild = rightChild;
 #ifdef IGUANADEBUG
         children++;
 #endif
         }
         else
-                node-> rightChild = NULL;
+                node->rightChild = NULL;
 
         va_end(args);
 #ifdef IGUANADEBUG
-        char* type = "Value";
-        if(node->nodeType == E_OPERATION)type = node->sval;
-        printf("Made node %s with %d childs\n", type, children);
+        if(node->nodeType == E_OPERATION)
+        {
+            printf("Made node %s with %d childs\n", node->sval, children);
+        }
+        else {
+            printf("Made node Value with %d childs\n", children);
+        }
 #endif
 
         return node;
@@ -465,34 +469,53 @@ float getNumVal(Data* data){
 
 
 void printProgTree(SyntaxNode* prog){
+
     if(!prog){
         printf("--Empty Node--\n\n");
         return;
     }
-    char* next = "null";
-    if(prog->leftChild){
-        if(prog->leftChild->nodeType == E_OPERATION)next = prog->leftChild->sval;
-        else if(prog->leftChild->nodeType == E_VALUE)next = "Value";
-    }
-    printf("stepping down into: %s\n", next);
-    printProgTree(prog->leftChild);
-    printf("stepping up to parent\n");
 
-    printf("printing node\n");
+    if(prog->leftChild){
+        if(prog->leftChild->nodeType == E_OPERATION)
+        {
+            printf("stepping down into leftChild: %s\n",prog->leftChild->sval);
+        }
+        else if(prog->leftChild->nodeType == E_VALUE)
+        {
+            printf("stepping down into leftChild: Value\n");
+        }
+        else
+        {
+            printf("stepping down into leftChild: null\n");
+        }
+        printProgTree(prog->leftChild);
+        printf("stepping up from left\n");
+    }
+
     printNode(prog);
 
-    char* rch = "null";
     if(prog->rightChild){
-        if(prog->rightChild->nodeType == E_OPERATION)rch = prog->rightChild->sval;
-        else if(prog->rightChild->nodeType == E_VALUE)rch = "Value";
+        if(prog->rightChild->nodeType == E_OPERATION)
+        {
+            printf("stepping down into rightChild: %s\n",prog->rightChild->sval);
+        }
+        else if(prog->rightChild->nodeType == E_VALUE)
+        {
+            printf("stepping down into rightChild: Value\n");
+        }
+        else
+        {
+            printf("stepping down into rightChild: null\n");
+        }
+        printProgTree(prog->rightChild);
+        printf("stepping up from right\n");
     }
-    printf("stepping down into rightChild: %s\n", rch);
-    printProgTree(prog->rightChild);
-    printf("stepping up\n");
 }
 
 void printNode(SyntaxNode* node){
 
+    printf("printing node\n");
+    if(!node)return;
     if(node->nodeType == E_OPERATION)
     {
         printf("--Operation--\n");
@@ -510,7 +533,7 @@ void printNode(SyntaxNode* node){
 
 void dprint(char* text){
 #ifdef IGUANADEBUG
-//    printf(text);
+    printf(text);
 #endif
 }
 
