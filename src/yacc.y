@@ -5,9 +5,11 @@
         #include <stdlib.h>
         #include "thunderstruct.h"
 
+        extern FILE *yyin;
         int lineno = 1;
         Variable* varRoot = NULL;
         SyntaxNode* progRoot = NULL;
+        int countProgTree = 0;
 
         //Forward-Declaration
         int yylex(void);
@@ -18,10 +20,11 @@
         void assignVar(Variable* var);                  //checks if Var exists for assignment
         void printVars();                               //print all nodes in "Variable" (last action of program, called in main)
         Variable* getVar(char* name);                   //retrieve Var from datastructure for insertion on right hand side of assignment
-        SyntaxNode* makeNode(int nodeType, int valueType, ...);
+        SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...);
         float getNumVal(Data* data);
         void printNode(SyntaxNode* node);
         void printProgTree(SyntaxNode* prog);
+
 %}
 
 
@@ -117,52 +120,79 @@
 program:	program declaration
                 {
 //                    char* varName;
-                    printf (" -PROG DECLARATION- ())\n");
-                    SyntaxNode* node = makeNode(E_OPERATION, STRING, "Prog", $1, $2);
+                    printf (" -PROG DECLARATION-  (1)\n");
+                    SyntaxNode* node = makeNode(5, E_OPERATION, STRING, "Prog", $1, $2);
                     progRoot = node;
                     $$ = node;
+                    printf("\n");
                 }
         |       program assignment
                 {
-                    printf (" -PROG ASSIGN- \n");
-                    SyntaxNode* node = makeNode(E_OPERATION, STRING, "Prog", $1, $2);
+                    printf (" -PROG ASSIGN-  (1)\n");
+                    SyntaxNode* node = makeNode(5, E_OPERATION, STRING, "Prog", $1, $2);
                     progRoot = node;
                     $$ = node;
+                    printf("\n");
                     //assignVar((Variable*)$2)
                 }
         |       program controlBlock
                 {
-//                     SyntaxNode* ret = makeNode(E_OPERATION, STRING, "Prog", $1, $2);
+//                     SyntaxNode* ret = makeNode(5, E_OPERATION, STRING, "Prog", $1, $2);
+                    printf("\n");
                 }
 
         |       program DEBUG MISC_LP LIT_STRING MISC_RP MISC_SEMI { printf("debug: %s \n", ((Data*)$4)->sval);}
-        |       {$$ = NULL; printf(" -EMPTY- \n");};
+        |       {
+                    printf(" -EMPTY- \n");
+                    printf("Made the EMPTY Node (1)\n\n");
+                    $$ = NULL;
+                };
 
 declaration:    type VAR MISC_SEMI
                 {
-                    $$ = makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $1), makeNode(E_VALUE, VARIABLE, ((Data*)$2)->sval));
+                    printf(" -DECL UNDEF- (3)\n");
+                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, $1), makeNode(3, E_VALUE, VARIABLE, ((Data*)$2)->sval));
                     insertVar(makeVar($1, ((Data*)$2)->sval), E_UNDEF);
                 }
         |       type assignment
                 {
-                    $$ = makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $1), $2);
+                    printf(" -DECL ASSIGN- (2)\n");
+                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, $1), $2);
                     insertVar(makeVar(((SyntaxNode*)$2)->rightChild->expressionType,((SyntaxNode*)$2)->leftChild->sval), E_VAR);
                 }
         |       CONST_DECL type assignment
                 {
-                    $$ = makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $2), $3);
+                    printf(" -DECL CONST- (2)\n");
+                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, $2), $3);
                     insertVar(makeVar(((SyntaxNode*)$3)->rightChild->expressionType, ((SyntaxNode*)$3)->leftChild->sval), E_CONST);
                 }
         |       type TYPE_ARRAY assignment
                 {
-                    $$ = makeNode(E_OPERATION, STRING, "DECL", makeNode(E_VALUE, INT, $1), $3);
+                    printf(" -DECL ARRAY- (2)\n");
+                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, $1), $3);
                     insertVar(makeVar(((SyntaxNode*)$3)->rightChild->expressionType, ((SyntaxNode*)$3)->leftChild->sval), E_ARR);
                 };
 
-assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI {$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), $3);}
-        |       VAR ASSIGN LIT_CHAR MISC_SEMI {$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), makeNode(E_VALUE, CHAR, ((Data*)$3)->sval));}
-        |       VAR ASSIGN LIT_STRING MISC_SEMI {$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), makeNode(E_VALUE, STRING, ((Data*)$3)->sval));}
-        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI{$$ = makeNode(E_OPERATION, STRING, "=", makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval), $4);}; //Attenzione!
+assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
+                {
+                    printf(" -ASSIGN EXPR- (2)\n");
+                    $$ = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)$1)->sval), $3);
+                }
+        |       VAR ASSIGN LIT_CHAR MISC_SEMI
+                {
+                    printf(" -ASSIGN CHAR- (3)\n");
+                    $$ = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)$1)->sval), makeNode(3, E_VALUE, CHAR, ((Data*)$3)->sval));
+                }
+        |       VAR ASSIGN LIT_STRING MISC_SEMI
+                {
+                    printf(" -ASSIGN STRING- (3)\n");
+                    $$ = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)$1)->sval), makeNode(3, E_VALUE, STRING, ((Data*)$3)->sval));
+                }
+        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI
+                {
+                    printf(" -ASSIGN ARRAY- (2)\n");
+                    $$ = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)$1)->sval), $4);
+                }; //Attenzione!
 
 arraystruct:    arrayitems
         |       arrayitems ARR_SEP arraystruct;  
@@ -178,25 +208,25 @@ type:           TYPE_INT {$$=INT;}
         |       TYPE_BOOL {$$=BOOL;};
 
 
-exprlvl_1:      exprlvl_1 logicOperator exprlvl_2 {$$ = makeNode(E_OPERATION, STRING, $2, $1, $3);}
+exprlvl_1:      exprlvl_1 logicOperator exprlvl_2 {printf(" -EXPR LOGIC (1)-\n"); $$ = makeNode(5, E_OPERATION, STRING, $2, $1, $3);}
         |       exprlvl_2 {$$=$1;};
 
-exprlvl_2:      exprlvl_2 lineOperator exprlvl_3 {$$ = makeNode(E_OPERATION, STRING, $2, $1, $3);}
+exprlvl_2:      exprlvl_2 lineOperator exprlvl_3 {printf(" -EXPR LINE (1)-\n"); $$ = makeNode(5, E_OPERATION, STRING, $2, $1, $3);}
         |       exprlvl_3 {$$=$1;};
 
-exprlvl_3:      exprlvl_3 pointOperator exprlvl_4 {$$ = makeNode(E_OPERATION, STRING, $2, $1, $3);}
+exprlvl_3:      exprlvl_3 pointOperator exprlvl_4 {printf(" -EXPR POINT (1)-\n"); $$ = makeNode(5, E_OPERATION, STRING, $2, $1, $3);}
         |       exprlvl_4 {$$=$1;};   
 
-exprlvl_4:      exprlvl_4 potOperator literal {$$ = makeNode(E_OPERATION, STRING, $2, $1, $3);}
+exprlvl_4:      exprlvl_4 potOperator literal {printf(" -EXPR POT (1)-\n"); $$ = makeNode(5, E_OPERATION, STRING, $2, $1, $3);}
         |       literal {$$=$1;};
 
 
 literal:        MISC_LP exprlvl_1 MISC_RP {$$ = $2;}
-        |       LOGIC_NOT MISC_LP exprlvl_1 MISC_RP {$$ = makeNode(E_OPERATION, STRING, "!", $3);}
-        |       LIT_BOOL {$$ = makeNode(E_VALUE, BOOL, $1);} 
-        |       number {$$ = makeNode(E_VALUE, ((Data*)$1)->type), getNumVal((Data*)$1);}
-        |       VAR {$$ = makeNode(E_VALUE, VARIABLE, ((Data*)$1)->sval); } 
-        |       OP_SUB VAR {$$ = makeNode(E_OPERATION, STRING, "-", makeNode(E_VALUE, VARIABLE, ((Data*)$2)->sval)); };
+        |       LOGIC_NOT MISC_LP exprlvl_1 MISC_RP {printf(" -LIT LOGIC NOT (1)-\n"); $$ = makeNode(4, E_OPERATION, STRING, "!", $3);}
+        |       LIT_BOOL {printf(" -LIT BOOL (1)-\n"); $$ = makeNode(3, E_VALUE, BOOL, $1);}
+        |       number {printf(" -LIT NUM (1)-\n"); $$ = makeNode(3, E_VALUE, ((Data*)$1)->type), getNumVal((Data*)$1);}
+        |       VAR {printf(" -LIT VAR (1)-\n"); $$ = makeNode(3, E_VALUE, VARIABLE, ((Data*)$1)->sval); }
+        |       OP_SUB VAR {printf(" -LIT NEG VAR (2)-\n"); $$ = makeNode(4, E_OPERATION, STRING, "-", makeNode(3, E_VALUE, VARIABLE, ((Data*)$2)->sval)); };
 
 number:         LIT_INT {$$ = $1;}
         |       LIT_FLOAT {$$ = $1;}
@@ -242,8 +272,14 @@ controlWhile:   CTRL_WHILE exprlvl_1 CTRL_DO program CTRL_END
 void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
 
 int main(void) { 
-	yyparse();
+        FILE *fh;
+        fh = fopen("/home/nick/Compiler/TICompiler/src/input", "r");
+        yyin = fh;
+        printf("\n\n---NODE CREATION--\n\n");
+        yyparse();
+        printf("\n\n---VAR LIST--\n\n");
         printVars();
+        printf("\n\n---SYNTAX TREE--\n\n");
         printProgTree(progRoot);
 	return 0;
 }
@@ -345,11 +381,11 @@ Variable* getVar(char* name){
         exit(-1);        
 }
 
-//makeNode(type, valType, value, lchild, rchild);       <-- Inner Node with 2 Children
-//makeNode(type, valType, value, lchild);               <-- Inner Node with 1 Child
-//makeNode(type, valType, value);                       <-- Leaf-Definition
+//makeNode(argCount, type, valType, value, lchild, rchild);       <-- Inner Node with 2 Children
+//makeNode(argCount, type, valType, value, lchild);               <-- Inner Node with 1 Child
+//makeNode(argCount, type, valType, value);                       <-- Leaf-Definition
 
-SyntaxNode* makeNode(int nodeType, int valueType, ...){
+SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...){
         va_list args;               // 👈 check it out!
         va_start(args, valueType);
         SyntaxNode* node = (SyntaxNode*) malloc(sizeof(SyntaxNode));
@@ -375,18 +411,19 @@ SyntaxNode* makeNode(int nodeType, int valueType, ...){
             yyerror("Node ValueType error!");
         }
 
-        SyntaxNode* leftChild = va_arg(args, SyntaxNode*);
-        SyntaxNode* rightChild = va_arg(args, SyntaxNode*);
-
-        if(leftChild)   // != NULL
+        if(argCount>=4){
+                SyntaxNode* leftChild = va_arg(args, SyntaxNode*);
                 node-> leftChild = leftChild;
-        else
+        }else{
                 node-> leftChild = NULL;
+        }
         
-        if(rightChild)  // != NULL
+        if(argCount>=5){
+                SyntaxNode* rightChild = va_arg(args, SyntaxNode*);
                 node-> rightChild = rightChild;
-        else
+        }else{
                 node-> rightChild = NULL;
+        }
 
         va_end(args);
 
@@ -407,8 +444,10 @@ float getNumVal(Data* data){
 
 
 void printProgTree(SyntaxNode* prog){
+    countProgTree++;
     if(!prog){
-        printf("  empty node\n");
+        printf("(%d)--Empty Node--\n\n", countProgTree);
+        countProgTree--;
         return;
     }
 
@@ -417,24 +456,26 @@ void printProgTree(SyntaxNode* prog){
         if(prog->leftChild->nodeType == E_OPERATION)next = prog->leftChild->sval;
         else if(prog->leftChild->nodeType == E_VALUE)next = "Value";
     }
-    printf("  stepping down into %s\n", next);
+    printf("(%d)stepping down into: %s\n", countProgTree, next);
     printProgTree(prog->leftChild);
+    printf("(%d)stepping up to parent\n", countProgTree);
 
+    printf("printing node\n");
     printNode(prog);
 
-    printf("trying rchild\n");
     char* rch = "null";
     if(prog->rightChild){
         if(prog->rightChild->nodeType == E_OPERATION)rch = prog->rightChild->sval;
         else if(prog->rightChild->nodeType == E_VALUE)rch = "Value";
     }
-    printf("rchild is: %s\n", rch);
+    printf("(%d)stepping down into rightChild: %s\n", countProgTree, rch);
     printProgTree(prog->rightChild);
-
-    printf("  stepping up\n");
+    printf("(%d)stepping up\n", countProgTree);
+    countProgTree--;
 }
 
 void printNode(SyntaxNode* node){
+
     if(node->nodeType == E_OPERATION)
     {
         printf("--Operation--\n");
