@@ -26,7 +26,7 @@ typedef enum NodeType {
 typedef struct SyntaxNode {
         int nodeType;               //identifiziert die node selbst (eg Int/eqlvl1 etc...)
         int valueType;
-        int expressionType;
+        Type expressionType;
         union
         {
                 int ival;

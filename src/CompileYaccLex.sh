@@ -8,6 +8,6 @@ fi
 yacc -vd --debug --verbose $1
 lex $2
 
-gcc y.tab.c lex.yy.c -std=c11 -Wall -o run -ll -g
+gcc y.tab.c lex.yy.c -std=c11 -Wall -o $3 -ll -g
 
 #rm lex.yy.* y.tab.* y.output

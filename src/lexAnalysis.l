@@ -109,8 +109,6 @@ Data* createStringLiteral(int type, char* val){
         litData->type = type;
         char* sval = (char*)malloc(strlen(val));
         strcpy(sval, val);
-        printf("making string: %s\n", val);
-        printf("making malloc'd string: %s\n", sval);
         litData->sval = sval;
         return litData;
 }
