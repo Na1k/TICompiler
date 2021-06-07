@@ -5,11 +5,9 @@ if [ "$#" -ne 3 ]; then
     exit
 fi
 
-yacc -vd $1
+yacc -vd --debug --verbose $1
 lex $2
-gcc -c y.tab.c
-gcc -c lex.yy.c
 
-gcc -o $3 y.tab.o lex.yy.o -ll
+gcc y.tab.c lex.yy.c -std=c11 -Wall -o $3 -ll -g
 
-rm lex.yy.* y.tab.* y.output
+#rm lex.yy.* y.tab.* y.output
