@@ -80,7 +80,7 @@
 				lineno++;
 			}
 [ \t]			;
-"//".*\n                { lineno++; printf("COMMENT\n");}         
+"//".*\n                { lineno++; /*printf("COMMENT\n");*/}
 
 "$debug"                return DEBUG;  
 
