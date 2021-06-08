@@ -26,6 +26,7 @@
 "bool"                  return TYPE_BOOL;
 "float"                 return TYPE_FLOAT;
 "string"                return TYPE_STRING;
+"void"                  return TYPE_VOID;
 
 "["                     return SQR_LP;
 "]"                     return SQR_RP;
