@@ -21,7 +21,8 @@ typedef enum Flags {
 typedef enum NodeType {
         E_OPERATION = 0,
         E_VALUE,
-        E_PROG
+        E_PROG,
+        E_ARRAY
 } NodeType;
 
 typedef struct SyntaxNode {
@@ -33,6 +34,11 @@ typedef struct SyntaxNode {
                 int ival;
                 float fval;
                 char *sval;
+                struct
+                {
+                    int index;
+                    char *sval;
+                } aval;
         };
         struct SyntaxNode* leftChild;
         struct SyntaxNode* rightChild;
@@ -48,7 +54,6 @@ typedef struct Variable {
         Type type;
         Flags flags;
         SyntaxNode* value;              //zeigt auf SyntaxNode
-        int length;                     //wie viele Bytes?
         struct Variable* next;
 } Variable;
 
