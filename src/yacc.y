@@ -556,6 +556,18 @@ void printNode(SyntaxNode* node){
     {
         printf("--Value--\n");
         printf("valueType: %d\n", node->valueType);
+        switch(node->valueType){
+                case BOOL:
+                case INT:
+                        printf("%d\n", node->ival);
+                        break;
+                case FLOAT:
+                        printf("%.5f\n", node->fval);
+                case CHAR:
+                case STRING:
+                        printf("%s\n", node->sval);
+                        break;
+        }
     }
     printf("end of node\n");
     printf("\n");
