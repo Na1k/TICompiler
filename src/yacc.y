@@ -26,6 +26,7 @@
         SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...);
         float getNumVal(Data* data);
         void printNode(SyntaxNode* node, int progLevel);
+        char* getValueType(Type type);
         void printProgTree(SyntaxNode* prog);
         void checkType(Type vType, Type eType);
 
@@ -272,7 +273,8 @@ literal:        MISC_LP exprlvl_1 MISC_RP {$$ = $2;}
         |       LIT_BOOL
                 {
                     nodeDPrint(" -LIT BOOL (1)-\n");
-                    SyntaxNode *node = makeNode(3, E_VALUE, BOOL, $1);
+                    SyntaxNode *node = makeNode(3, E_VALUE, BOOL, ((Data*)$1)->ival);
+                    printf("----------------------------%d\n",node->ival);
                     node->expressionType = BOOL;
                     $$ = node;
                 }
@@ -358,7 +360,7 @@ int main(void) {
         printf("\n\n---SYNTAX TREE--\n\n");
 //        printProgTree(progRoot);
         printf("\n\n---VAR LIST--\n\n");
-//        printVars();
+        printVars();
 	return 0;
 }
 
@@ -413,6 +415,7 @@ void printVars(){
         int varNum = 0;
         while(tmp){
                 printf("%d Type: %d Name: %s Flags: %d\n", varNum, tmp->type, tmp->name, tmp->flags);
+                printProgTree(tmp->value);
                 varNum++;
         if(tmp->next)
                 tmp = tmp->next;
@@ -454,6 +457,8 @@ SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...){
 
         switch (valueType) {
         case BOOL:
+            node->ival = va_arg(args, int);
+            break;
         case INT:
             node->ival = (int)va_arg(args, double);
             break;
@@ -566,13 +571,13 @@ void printNode(SyntaxNode* node, int progLevel){
     if(node->nodeType == E_OPERATION)
     {
         printf("--Operation--\n");
-        printf("valueType(should be 4): %d\n", node->valueType);
+        printf("valueType: %s\n", getValueType(node->valueType));
         printf("opString: %s\n", node->sval);
     }
     else if(node->nodeType == E_VALUE)
     {
         printf("--Value--\n");
-        printf("valueType: %d\n", node->valueType);
+        printf("valueType: %s\n", getValueType(node->valueType));
         printf("value: ");
         switch(node->valueType){
                 case BOOL:
@@ -584,8 +589,11 @@ void printNode(SyntaxNode* node, int progLevel){
                         break;
                 case CHAR:
                 case STRING:
+                case VARIABLE:
                         printf("%s\n", node->sval);
                         break;
+                default:
+                        printf("\n");
         }
     }
     printf("end of node\n");
@@ -593,7 +601,24 @@ void printNode(SyntaxNode* node, int progLevel){
 }
 
 
-
+char* getValueType(Type type){
+        switch(type){
+                case BOOL:
+                        return "BOOL";
+                case INT:
+                        return "INT";
+                case FLOAT:
+                        return "FLOAT";
+                case CHAR:
+                        return "CHAR";
+                case STRING:
+                        return "STRING";
+                case VARIABLE:
+                        return "VARIABLE";
+                default:
+                        return "WTF?";
+        }
+}
 
 void checkType(Type vType, Type eType){
     if(vType == FLOAT){
