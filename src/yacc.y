@@ -10,6 +10,7 @@
         Variable* varRoot = NULL;
         SyntaxNode* progRoot = NULL;
         int countProgTree = 0;
+        int progLevel = 0;
 
         //Forward-Declaration
         int yylex(void);
@@ -22,7 +23,7 @@
         Variable* getVar(char* name);                   //retrieve Var from datastructure for insertion on right hand side of assignment
         SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...);
         float getNumVal(Data* data);
-        void printNode(SyntaxNode* node);
+        void printNode(SyntaxNode* node, int progLevel);
         void printProgTree(SyntaxNode* prog);
         void checkType(Type vType, Type eType);
 
@@ -123,13 +124,13 @@ program:	program declaration
                 {
 //                    char* varName;
                     printf (" -PROG DECLARATION-  (1)\n");
-                    progRoot = makeNode(5, E_OPERATION, STRING, "Prog", progRoot, $2);
+                    progRoot = makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
                     printf("\n");
                 }
         |       program assignment
                 {
                     printf (" -PROG ASSIGN-  (1)\n");
-                    progRoot= makeNode(5, E_OPERATION, STRING, "Prog", progRoot, $2);
+                    progRoot= makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
                     Type exprType = ((SyntaxNode*)$2)->rightChild->expressionType;
                     Variable* var = getVar(((SyntaxNode*)$2)->leftChild->sval);
                     checkType(var->type, exprType);
@@ -512,16 +513,25 @@ void printProgTree(SyntaxNode* prog){
         {
             printf("(%d)stepping down into leftChild: Value\n", countProgTree);
         }
+        else if(prog->leftChild->nodeType == E_PROG)
+        {
+            printf("-------------------------Left is a new PROGRAM-node!\n");
+            progLevel++;
+        }
         else
         {
             printf("Node Error");
         }
         printProgTree(prog->leftChild);
         printf("(%d)stepping up from left\n", countProgTree);
+        if(prog->nodeType == E_PROG){
+                printf("-------------------------Stepping up from PROGRAM-Node!\n");
+                progLevel--;
+        }
     }
 
 
-    printNode(prog);
+    printNode(prog, progLevel);
 
     if(prog->rightChild){
         if(prog->rightChild->nodeType == E_OPERATION)
@@ -542,9 +552,9 @@ void printProgTree(SyntaxNode* prog){
     countProgTree--;
 }
 
-void printNode(SyntaxNode* node){
+void printNode(SyntaxNode* node, int progLevel){
 
-    printf("printing node\n");
+    printf("Printing node on progLevel: %d\n", progLevel);
     if(!node)return;
     if(node->nodeType == E_OPERATION)
     {
@@ -563,6 +573,7 @@ void printNode(SyntaxNode* node){
                         break;
                 case FLOAT:
                         printf("%.5f\n", node->fval);
+                        break;
                 case CHAR:
                 case STRING:
                         printf("%s\n", node->sval);

@@ -20,7 +20,8 @@ typedef enum Flags {
 
 typedef enum NodeType {
         E_OPERATION = 0,
-        E_VALUE
+        E_VALUE,
+        E_PROG
 } NodeType;
 
 typedef struct SyntaxNode {

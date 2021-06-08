@@ -79,6 +79,7 @@
         Variable* varRoot = NULL;
         SyntaxNode* progRoot = NULL;
         int countProgTree = 0;
+        int progLevel = 0;
 
         //Forward-Declaration
         int yylex(void);
@@ -91,12 +92,12 @@
         Variable* getVar(char* name);                   //retrieve Var from datastructure for insertion on right hand side of assignment
         SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...);
         float getNumVal(Data* data);
-        void printNode(SyntaxNode* node);
+        void printNode(SyntaxNode* node, int progLevel);
         void printProgTree(SyntaxNode* prog);
         void checkType(Type vType, Type eType);
 
 
-#line 100 "y.tab.c"
+#line 101 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -240,13 +241,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 32 "yacc.y"
+#line 33 "yacc.y"
 
         void* content;
         int type;
         char* opString;
 
-#line 250 "y.tab.c"
+#line 251 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -626,13 +627,13 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   122,   122,   129,   139,   144,   145,   151,   157,   165,
-     173,   182,   187,   194,   201,   207,   208,   210,   211,   212,
-     214,   215,   216,   217,   218,   221,   228,   230,   237,   239,
-     246,   248,   255,   258,   259,   266,   273,   281,   294,   303,
-     304,   305,   306,   307,   309,   310,   312,   313,   314,   316,
-     318,   319,   320,   321,   322,   324,   325,   329,   330,   332,
-     333,   335,   336,   338,   339
+       0,   123,   123,   130,   140,   145,   146,   152,   158,   166,
+     174,   183,   188,   195,   202,   208,   209,   211,   212,   213,
+     215,   216,   217,   218,   219,   222,   229,   231,   238,   240,
+     247,   249,   256,   259,   260,   267,   274,   282,   295,   304,
+     305,   306,   307,   308,   310,   311,   313,   314,   315,   317,
+     319,   320,   321,   322,   323,   325,   326,   330,   331,   333,
+     334,   336,   337,   339,   340
 };
 #endif
 
@@ -1531,66 +1532,66 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 123 "yacc.y"
+#line 124 "yacc.y"
                 {
 //                    char* varName;
                     printf (" -PROG DECLARATION-  (1)\n");
-                    progRoot = makeNode(5, E_OPERATION, STRING, "Prog", progRoot, (yyvsp[0].content));
+                    progRoot = makeNode(5, E_PROG, STRING, "Prog", progRoot, (yyvsp[0].content));
                     printf("\n");
                 }
-#line 1542 "y.tab.c"
+#line 1543 "y.tab.c"
     break;
 
   case 3:
-#line 130 "yacc.y"
+#line 131 "yacc.y"
                 {
                     printf (" -PROG ASSIGN-  (1)\n");
-                    progRoot= makeNode(5, E_OPERATION, STRING, "Prog", progRoot, (yyvsp[0].content));
+                    progRoot= makeNode(5, E_PROG, STRING, "Prog", progRoot, (yyvsp[0].content));
                     Type exprType = ((SyntaxNode*)(yyvsp[0].content))->rightChild->expressionType;
                     Variable* var = getVar(((SyntaxNode*)(yyvsp[0].content))->leftChild->sval);
                     checkType(var->type, exprType);
                     assignVar(var, ((SyntaxNode*)(yyvsp[0].content))->rightChild);
                     printf("\n");
                 }
-#line 1556 "y.tab.c"
+#line 1557 "y.tab.c"
     break;
 
   case 4:
-#line 140 "yacc.y"
+#line 141 "yacc.y"
                 {
                     printf("\n");
                 }
-#line 1564 "y.tab.c"
+#line 1565 "y.tab.c"
     break;
 
   case 5:
-#line 144 "yacc.y"
+#line 145 "yacc.y"
                                                                    { printf("debug: %s \n", ((Data*)(yyvsp[-2].content))->sval);}
-#line 1570 "y.tab.c"
+#line 1571 "y.tab.c"
     break;
 
   case 6:
-#line 145 "yacc.y"
+#line 146 "yacc.y"
                 {
                     printf(" -EMPTY- \n");
                     printf("Made the EMPTY Node (1)\n\n");
                     (yyval.content) = NULL;
                 }
-#line 1580 "y.tab.c"
+#line 1581 "y.tab.c"
     break;
 
   case 7:
-#line 152 "yacc.y"
+#line 153 "yacc.y"
                 {
                     printf(" -DECL UNDEF- (3)\n");
                     (yyval.content) = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, (yyvsp[-2].type)), makeNode(3, E_VALUE, VARIABLE, ((Data*)(yyvsp[-1].content))->sval));
                     insertVar(makeVar((yyvsp[-2].type), ((Data*)(yyvsp[-1].content))->sval), E_UNDEF, NULL);
                 }
-#line 1590 "y.tab.c"
+#line 1591 "y.tab.c"
     break;
 
   case 8:
-#line 158 "yacc.y"
+#line 159 "yacc.y"
                 {
                     printf(" -DECL ASSIGN- (2)\n");
                     Type exprType = ((SyntaxNode*)(yyvsp[0].content))->rightChild->expressionType;
@@ -1598,11 +1599,11 @@ yyreduce:
                     (yyval.content) = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, (yyvsp[-1].type)), (yyvsp[0].content));
                     insertVar(makeVar((yyvsp[-1].type), ((SyntaxNode*)(yyvsp[0].content))->leftChild->sval), E_VAR, ((SyntaxNode*)(yyvsp[0].content))->rightChild);
                 }
-#line 1602 "y.tab.c"
+#line 1603 "y.tab.c"
     break;
 
   case 9:
-#line 166 "yacc.y"
+#line 167 "yacc.y"
                 {
                     printf(" -DECL CONST- (2)\n");
                     Type exprType = ((SyntaxNode*)(yyvsp[0].content))->rightChild->expressionType;
@@ -1610,11 +1611,11 @@ yyreduce:
                     (yyval.content) = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, (yyvsp[-1].type)), (yyvsp[0].content));
                     insertVar(makeVar((yyvsp[-1].type), ((SyntaxNode*)(yyvsp[0].content))->leftChild->sval), E_CONST, ((SyntaxNode*)(yyvsp[0].content))->rightChild);
                 }
-#line 1614 "y.tab.c"
+#line 1615 "y.tab.c"
     break;
 
   case 10:
-#line 174 "yacc.y"
+#line 175 "yacc.y"
                 {
                     printf(" -DECL ARRAY- (2)\n");
                     Type exprType = ((SyntaxNode*)(yyvsp[0].content))->rightChild->expressionType;
@@ -1622,177 +1623,177 @@ yyreduce:
                     (yyval.content) = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, (yyvsp[-2].type)), (yyvsp[0].content));
                     insertVar(makeVar((yyvsp[-2].type), ((SyntaxNode*)(yyvsp[0].content))->leftChild->sval), E_ARR, ((SyntaxNode*)(yyvsp[0].content))->rightChild);
                 }
-#line 1626 "y.tab.c"
+#line 1627 "y.tab.c"
     break;
 
   case 11:
-#line 183 "yacc.y"
+#line 184 "yacc.y"
                 {
                     printf(" -ASSIGN EXPR- (2)\n");
                     (yyval.content) = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)(yyvsp[-3].content))->sval), (yyvsp[-1].content));
                 }
-#line 1635 "y.tab.c"
+#line 1636 "y.tab.c"
     break;
 
   case 12:
-#line 188 "yacc.y"
+#line 189 "yacc.y"
                 {
                     printf(" -ASSIGN CHAR- (3)\n");
                     SyntaxNode *charNode = makeNode(3, E_VALUE, CHAR, ((Data*)(yyvsp[-1].content))->sval);
                     charNode->expressionType = CHAR;
                     (yyval.content) = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)(yyvsp[-3].content))->sval), charNode);
                 }
-#line 1646 "y.tab.c"
+#line 1647 "y.tab.c"
     break;
 
   case 13:
-#line 195 "yacc.y"
+#line 196 "yacc.y"
                 {
                     printf(" -ASSIGN STRING- (3)\n");
                     SyntaxNode *strNode = makeNode(3, E_VALUE, STRING, ((Data*)(yyvsp[-1].content))->sval);
                     strNode->expressionType = STRING;
                     (yyval.content) = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)(yyvsp[-3].content))->sval), strNode);
                 }
-#line 1657 "y.tab.c"
+#line 1658 "y.tab.c"
     break;
 
   case 14:
-#line 202 "yacc.y"
+#line 203 "yacc.y"
                 {
                     printf(" -ASSIGN ARRAY- (2)\n");
                     (yyval.content) = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)(yyvsp[-5].content))->sval), (yyvsp[-2].content));
                 }
-#line 1666 "y.tab.c"
+#line 1667 "y.tab.c"
     break;
 
   case 20:
-#line 214 "yacc.y"
+#line 215 "yacc.y"
                          {(yyval.type)=INT;}
-#line 1672 "y.tab.c"
+#line 1673 "y.tab.c"
     break;
 
   case 21:
-#line 215 "yacc.y"
+#line 216 "yacc.y"
                            {(yyval.type)=FLOAT;}
-#line 1678 "y.tab.c"
+#line 1679 "y.tab.c"
     break;
 
   case 22:
-#line 216 "yacc.y"
+#line 217 "yacc.y"
                           {(yyval.type)=CHAR;}
-#line 1684 "y.tab.c"
+#line 1685 "y.tab.c"
     break;
 
   case 23:
-#line 217 "yacc.y"
+#line 218 "yacc.y"
                             {(yyval.type)=STRING;}
-#line 1690 "y.tab.c"
+#line 1691 "y.tab.c"
     break;
 
   case 24:
-#line 218 "yacc.y"
+#line 219 "yacc.y"
                           {(yyval.type)=BOOL;}
-#line 1696 "y.tab.c"
+#line 1697 "y.tab.c"
     break;
 
   case 25:
-#line 222 "yacc.y"
+#line 223 "yacc.y"
                 {
                     printf(" -EXPR LOGIC (1)-\n");
                     SyntaxNode *node = makeNode(5, E_OPERATION, STRING, (yyvsp[-1].opString), (yyvsp[-2].content), (yyvsp[0].content));
                     node->expressionType = BOOL;
                     (yyval.content) = node;
                 }
-#line 1707 "y.tab.c"
+#line 1708 "y.tab.c"
     break;
 
   case 26:
-#line 228 "yacc.y"
+#line 229 "yacc.y"
                           {(yyval.content)=(yyvsp[0].content);}
-#line 1713 "y.tab.c"
+#line 1714 "y.tab.c"
     break;
 
   case 27:
-#line 231 "yacc.y"
+#line 232 "yacc.y"
                 {
                     printf(" -EXPR LINE (1)-\n");
                     SyntaxNode *node = makeNode(5, E_OPERATION, STRING, (yyvsp[-1].opString), (yyvsp[-2].content), (yyvsp[0].content));
                     node->expressionType = ( ((SyntaxNode*)(yyvsp[-2].content))->expressionType == FLOAT || ((SyntaxNode*)(yyvsp[0].content))->expressionType == FLOAT ) ? FLOAT : INT;
                     (yyval.content) = node;
                 }
-#line 1724 "y.tab.c"
+#line 1725 "y.tab.c"
     break;
 
   case 28:
-#line 237 "yacc.y"
+#line 238 "yacc.y"
                           {(yyval.content)=(yyvsp[0].content);}
-#line 1730 "y.tab.c"
+#line 1731 "y.tab.c"
     break;
 
   case 29:
-#line 240 "yacc.y"
+#line 241 "yacc.y"
                 {
                     printf(" -EXPR POINT (1)-\n");
                     SyntaxNode *node = makeNode(5, E_OPERATION, STRING, (yyvsp[-1].opString), (yyvsp[-2].content), (yyvsp[0].content));
                     node->expressionType = ( ((SyntaxNode*)(yyvsp[-2].content))->expressionType == FLOAT || ((SyntaxNode*)(yyvsp[0].content))->expressionType == FLOAT ) ? FLOAT : INT;
                     (yyval.content) = node;
                 }
-#line 1741 "y.tab.c"
+#line 1742 "y.tab.c"
     break;
 
   case 30:
-#line 246 "yacc.y"
+#line 247 "yacc.y"
                           {(yyval.content)=(yyvsp[0].content);}
-#line 1747 "y.tab.c"
+#line 1748 "y.tab.c"
     break;
 
   case 31:
-#line 249 "yacc.y"
+#line 250 "yacc.y"
                 {
                     printf(" -EXPR POT (1)-\n");
                     SyntaxNode *node = makeNode(5, E_OPERATION, STRING, (yyvsp[-1].opString), (yyvsp[-2].content), (yyvsp[0].content));
                     node->expressionType = ( ((SyntaxNode*)(yyvsp[-2].content))->expressionType == FLOAT || ((SyntaxNode*)(yyvsp[0].content))->expressionType == FLOAT ) ? FLOAT : INT;
                     (yyval.content) = node;
                 }
-#line 1758 "y.tab.c"
+#line 1759 "y.tab.c"
     break;
 
   case 32:
-#line 255 "yacc.y"
+#line 256 "yacc.y"
                         {(yyval.content)=(yyvsp[0].content);}
-#line 1764 "y.tab.c"
+#line 1765 "y.tab.c"
     break;
 
   case 33:
-#line 258 "yacc.y"
+#line 259 "yacc.y"
                                           {(yyval.content) = (yyvsp[-1].content);}
-#line 1770 "y.tab.c"
+#line 1771 "y.tab.c"
     break;
 
   case 34:
-#line 260 "yacc.y"
+#line 261 "yacc.y"
                 {
                     printf(" -LIT LOGIC NOT (1)-\n");
                     SyntaxNode *node = makeNode(4, E_OPERATION, STRING, "!", (yyvsp[-1].content));
                     node->expressionType = BOOL;
                     (yyval.content) = node;
                 }
-#line 1781 "y.tab.c"
+#line 1782 "y.tab.c"
     break;
 
   case 35:
-#line 267 "yacc.y"
+#line 268 "yacc.y"
                 {
                     printf(" -LIT BOOL (1)-\n");
                     SyntaxNode *node = makeNode(3, E_VALUE, BOOL, (yyvsp[0].content));
                     node->expressionType = BOOL;
                     (yyval.content) = node;
                 }
-#line 1792 "y.tab.c"
+#line 1793 "y.tab.c"
     break;
 
   case 36:
-#line 274 "yacc.y"
+#line 275 "yacc.y"
                 {
                     printf(" -LIT NUM (1)-\n");
                     Type exprType = ((Data*)(yyvsp[0].content))->type;
@@ -1800,11 +1801,11 @@ yyreduce:
                     node->expressionType = exprType;
                     (yyval.content) = node;
                 }
-#line 1804 "y.tab.c"
+#line 1805 "y.tab.c"
     break;
 
   case 37:
-#line 282 "yacc.y"
+#line 283 "yacc.y"
                 {
                     printf(" -LIT VAR (1)-\n");
                     Variable* var = getVar(((Data*)(yyvsp[0].content))->sval);
@@ -1817,11 +1818,11 @@ yyreduce:
                     node->expressionType = exprType;
                     (yyval.content) = node;
                 }
-#line 1821 "y.tab.c"
+#line 1822 "y.tab.c"
     break;
 
   case 38:
-#line 295 "yacc.y"
+#line 296 "yacc.y"
                 {
                     printf(" -LIT NEG VAR (2)-\n");
                     Type exprType = (getVar(((Data*)(yyvsp[0].content))->sval))->type;
@@ -1829,119 +1830,119 @@ yyreduce:
                     node->expressionType = exprType;
                     (yyval.content) = node;
                 }
-#line 1833 "y.tab.c"
+#line 1834 "y.tab.c"
     break;
 
   case 39:
-#line 303 "yacc.y"
+#line 304 "yacc.y"
                         {(yyval.content) = (yyvsp[0].content);}
-#line 1839 "y.tab.c"
+#line 1840 "y.tab.c"
     break;
 
   case 40:
-#line 304 "yacc.y"
+#line 305 "yacc.y"
                           {(yyval.content) = (yyvsp[0].content);}
-#line 1845 "y.tab.c"
+#line 1846 "y.tab.c"
     break;
 
   case 41:
-#line 305 "yacc.y"
+#line 306 "yacc.y"
                          {(yyval.content) = (yyvsp[0].content);}
-#line 1851 "y.tab.c"
+#line 1852 "y.tab.c"
     break;
 
   case 42:
-#line 306 "yacc.y"
+#line 307 "yacc.y"
                                {((Data*)(yyvsp[0].content))->ival = -((Data*)(yyvsp[0].content))->ival; (yyval.content) = (yyvsp[0].content);}
-#line 1857 "y.tab.c"
+#line 1858 "y.tab.c"
     break;
 
   case 43:
-#line 307 "yacc.y"
+#line 308 "yacc.y"
                                  {((Data*)(yyvsp[0].content))->fval = -((Data*)(yyvsp[0].content))->fval; (yyval.content) = (yyvsp[0].content);}
-#line 1863 "y.tab.c"
+#line 1864 "y.tab.c"
     break;
 
   case 44:
-#line 309 "yacc.y"
+#line 310 "yacc.y"
                        {(yyval.opString) = "+";}
-#line 1869 "y.tab.c"
+#line 1870 "y.tab.c"
     break;
 
   case 45:
-#line 310 "yacc.y"
+#line 311 "yacc.y"
                        {(yyval.opString) = "-";}
-#line 1875 "y.tab.c"
+#line 1876 "y.tab.c"
     break;
 
   case 46:
-#line 312 "yacc.y"
+#line 313 "yacc.y"
                        {(yyval.opString) = "*";}
-#line 1881 "y.tab.c"
+#line 1882 "y.tab.c"
     break;
 
   case 47:
-#line 313 "yacc.y"
+#line 314 "yacc.y"
                        {(yyval.opString) = "/";}
-#line 1887 "y.tab.c"
+#line 1888 "y.tab.c"
     break;
 
   case 48:
-#line 314 "yacc.y"
+#line 315 "yacc.y"
                        {(yyval.opString) = "%";}
-#line 1893 "y.tab.c"
+#line 1894 "y.tab.c"
     break;
 
   case 49:
-#line 316 "yacc.y"
+#line 317 "yacc.y"
                        {(yyval.opString) = "^";}
-#line 1899 "y.tab.c"
+#line 1900 "y.tab.c"
     break;
 
   case 50:
-#line 318 "yacc.y"
+#line 319 "yacc.y"
                          {(yyval.opString) = "==";}
-#line 1905 "y.tab.c"
+#line 1906 "y.tab.c"
     break;
 
   case 51:
-#line 319 "yacc.y"
+#line 320 "yacc.y"
                         {(yyval.opString) = "<";}
-#line 1911 "y.tab.c"
+#line 1912 "y.tab.c"
     break;
 
   case 52:
-#line 320 "yacc.y"
+#line 321 "yacc.y"
                         {(yyval.opString) = ">=";}
-#line 1917 "y.tab.c"
+#line 1918 "y.tab.c"
     break;
 
   case 53:
-#line 321 "yacc.y"
+#line 322 "yacc.y"
                         {(yyval.opString) = ">";}
-#line 1923 "y.tab.c"
+#line 1924 "y.tab.c"
     break;
 
   case 54:
-#line 322 "yacc.y"
+#line 323 "yacc.y"
                         {(yyval.opString) = ">=";}
-#line 1929 "y.tab.c"
+#line 1930 "y.tab.c"
     break;
 
   case 55:
-#line 324 "yacc.y"
+#line 325 "yacc.y"
                           {(yyval.opString) = "&";}
-#line 1935 "y.tab.c"
+#line 1936 "y.tab.c"
     break;
 
   case 56:
-#line 325 "yacc.y"
+#line 326 "yacc.y"
                          {(yyval.opString) = "|";}
-#line 1941 "y.tab.c"
+#line 1942 "y.tab.c"
     break;
 
 
-#line 1945 "y.tab.c"
+#line 1946 "y.tab.c"
 
       default: break;
     }
@@ -2173,7 +2174,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 342 "yacc.y"
+#line 343 "yacc.y"
 
 
 void yyerror (char *s) { fprintf(stderr, "Line %d: %s\n", lineno, s); }
@@ -2347,16 +2348,25 @@ void printProgTree(SyntaxNode* prog){
         {
             printf("(%d)stepping down into leftChild: Value\n", countProgTree);
         }
+        else if(prog->leftChild->nodeType == E_PROG)
+        {
+            printf("-------------------------Left is a new PROGRAM-node!\n");
+            progLevel++;
+        }
         else
         {
             printf("Node Error");
         }
         printProgTree(prog->leftChild);
         printf("(%d)stepping up from left\n", countProgTree);
+        if(prog->nodeType == E_PROG){
+                printf("-------------------------Stepping up from PROGRAM-Node!\n");
+                progLevel--;
+        }
     }
 
 
-    printNode(prog);
+    printNode(prog, progLevel);
 
     if(prog->rightChild){
         if(prog->rightChild->nodeType == E_OPERATION)
@@ -2377,9 +2387,9 @@ void printProgTree(SyntaxNode* prog){
     countProgTree--;
 }
 
-void printNode(SyntaxNode* node){
+void printNode(SyntaxNode* node, int progLevel){
 
-    printf("printing node\n");
+    printf("printing node on progLevel: %d\n", progLevel);
     if(!node)return;
     if(node->nodeType == E_OPERATION)
     {
@@ -2398,6 +2408,7 @@ void printNode(SyntaxNode* node){
                         break;
                 case FLOAT:
                         printf("%.5f\n", node->fval);
+                        break;
                 case CHAR:
                 case STRING:
                         printf("%s\n", node->sval);
