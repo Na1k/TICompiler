@@ -5,7 +5,7 @@
         #include <stdlib.h>
         #include "thunderstruct.h"
 
-        #define NODEDEBUG
+//        #define NODEDEBUG
 
         extern FILE *yyin;
         int lineno = 1;
@@ -33,6 +33,7 @@
         void checkType(Type vType, Type eType);
         void checkArrSize(int declSize, int assignSize);
         void checkVarArrCompatibility(Variable* var, SyntaxNode* expr);
+        void checkArrBeforeAssignment(Variable* var, Data* literal);
 
         //debug
         void nodeDPrint(char* str);
@@ -143,10 +144,39 @@ program:	program declaration
                     nodeDPrint (" -PROG ASSIGN-  (1)\n");
                     progRoot= makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
                     Type exprType = ((SyntaxNode*)$2)->rightChild->expressionType;
-                    Variable* var = getVar(((SyntaxNode*)$2)->leftChild->sval);
-                    checkVarArrCompatibility(var, $2);
-                    checkType(var->type, exprType);
-                    assignVar(var, ((SyntaxNode*)$2)->rightChild);
+                    
+                    if(((SyntaxNode*)$2)->leftChild->valueType == ARRAY)
+                    {
+                        Variable* var = getVar(((SyntaxNode*)$2)->leftChild->aval.sval);
+                        SyntaxNode* arrNode = var->value;
+                        
+                        if(((SyntaxNode*)$2)->rightChild->nodeType == E_ARRAY)
+                        {
+                                yyerror("Multi-Dimensional Arrays are not allowed!");
+                                exit(-1);
+                        }
+
+                        do
+                        {
+                                arrNode = arrNode->leftChild;
+                        }
+                        while(((SyntaxNode*)$2)->leftChild->aval.index--);
+
+                        arrNode->rightChild = ((SyntaxNode*)$2)->rightChild; //->rightChild;
+
+                    }
+                    else if(((SyntaxNode*)$2)->leftChild->valueType == VARIABLE)
+                    {
+                        Variable* var = getVar(((SyntaxNode*)$2)->leftChild->sval);
+                        checkVarArrCompatibility(var, $2);
+                        checkType(var->type, exprType);
+                        assignVar(var, ((SyntaxNode*)$2)->rightChild);
+                    }
+                    else
+                    {
+                        yyerror("Fatal Error in Assignment");
+                        exit(-1);
+                    }
                     nodeDPrint("\n");
                 }
 
@@ -246,7 +276,7 @@ assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
                     strNode->expressionType = STRING;
                     $$ = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)$1)->sval), strNode);
                 }
-        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI //TODO VARIABLE STRUCT IMPLEMENTATION && SYNTAX IMPLEMENTATION (++TYPEMATCHING)
+        |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI
                 {
                     nodeDPrint(" -ASSIGN ARRAY- (2)\n");
                     SyntaxNode* arrNode = makeNode(4, E_ARRAY, INT, (float)arrSizeTmp, $4);
@@ -254,6 +284,46 @@ assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
                     SyntaxNode* node = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)$1)->sval), arrNode);
                     $$ = node;
                     arrSizeTmp = 0;
+                }
+        |       VAR SQR_LP LIT_INT SQR_RP ASSIGN exprlvl_1 MISC_SEMI
+                {
+                        nodeDPrint(" -ASSIGN ARRAY BY INDEX EXPR- ()\n");                  
+                        checkArrBeforeAssignment(getVar(((Data*)$1)->sval), $3);
+                        
+                        SyntaxNode *node = makeNode(3, E_VALUE, ARRAY, NULL);
+                        node->aval.index = (int)getNumVal((Data*)$3);
+                        node->aval.sval = ((Data*)$1)->sval;       
+                        
+                        $$ = makeNode(5, E_OPERATION, STRING, "=", node, $6);
+
+                }
+        |       VAR SQR_LP LIT_INT SQR_RP ASSIGN LIT_CHAR MISC_SEMI
+                {
+                        nodeDPrint(" -ASSIGN ARRAY BY INDEX CHAR- ()\n");
+                        checkArrBeforeAssignment(getVar(((Data*)$1)->sval), $3);
+                        
+                        SyntaxNode *node = makeNode(3, E_VALUE, ARRAY, NULL);
+                        node->aval.index = (int)getNumVal((Data*)$3);
+                        node->aval.sval = ((Data*)$1)->sval;
+                        
+                        SyntaxNode *charNode = makeNode(3, E_VALUE, CHAR, ((Data*)$6)->sval);
+                        charNode->expressionType = CHAR;
+                        
+                        $$ = makeNode(5, E_OPERATION, STRING, "=", node, charNode);
+                }
+        |       VAR SQR_LP LIT_INT SQR_RP ASSIGN LIT_STRING MISC_SEMI
+                {
+                        nodeDPrint(" -ASSIGN ARRAY BY INDEX STRING- ()\n");
+                        checkArrBeforeAssignment(getVar(((Data*)$1)->sval), $3);
+                        
+                        SyntaxNode *node = makeNode(3, E_VALUE, ARRAY, NULL);
+                        node->aval.index = (int)getNumVal((Data*)$3);
+                        node->aval.sval = ((Data*)$1)->sval;
+
+                        SyntaxNode *strNode = makeNode(3, E_VALUE, STRING, ((Data*)$6)->sval);
+                        strNode->expressionType = STRING;
+                        
+                        $$ = makeNode(5, E_OPERATION, STRING, "=", node, strNode);
                 };
 
 
@@ -380,20 +450,10 @@ literal:        MISC_LP exprlvl_1 MISC_RP {$$ = $2;}
         |       VAR SQR_LP LIT_INT SQR_RP
                 {
                     nodeDPrint(" -ARR ACCESS (1)-\n");
-                    Variable* var = getVar(((Data*)$1)->sval);
-                    if(var->flags & E_UNDEF){
-                        yyerror("ERROR - Use of undefined var in assignment\n");
-                        exit(-1);
-                    }
-                    if(var->value->nodeType != E_ARRAY){
-                        yyerror("ERROR - array index access on non array variable\n");
-                        exit(-1);
-                    }
-                    if((int)getNumVal($3) >= var->value->ival - 1){
-                        yyerror("ERROR - array index out of bounce\n");
-                        exit(-1);
-                    }
-                    Type exprType = var->type;
+
+                    checkArrBeforeAssignment(getVar(((Data*)$1)->sval), $3);
+
+                    Type exprType = getVar(((Data*)$1)->sval)->type;
                     SyntaxNode *node = makeNode(3, E_VALUE, ARRAY, NULL);
                     node->aval.index = (int)getNumVal((Data*)$3);
                     node->aval.sval = ((Data*)$1)->sval;
@@ -452,7 +512,7 @@ int main(void) {
         printf("\n\n---SYNTAX TREE--\n\n");
 //        printProgTree(progRoot);
         printf("\n\n---VAR LIST--\n\n");
-//        printVars();
+        printVars();
 	return 0;
 }
 
@@ -495,7 +555,6 @@ void assignVar(Variable* var, SyntaxNode* value){
             yyerror("Fehlermeldung, Neuzuweisung Konstante - pfui");
             exit(-1);
         }
-        //TODO was mit Arrays
         var->flags = E_VAR;
         var->value = value;
         return;
@@ -743,6 +802,8 @@ char* getValueType(Type type){
                         return "STRING";
                 case VARIABLE:
                         return "VARIABLE";
+                case ARRAY:
+                        return "ARRAY";
                 default:
                         return "WTF?";
         }
@@ -790,6 +851,21 @@ void checkVarArrCompatibility(Variable* var, SyntaxNode* expr){
             exit(-1);
         }
     }
+}
+
+void checkArrBeforeAssignment(Variable* var, Data* literal){
+        if(var->flags & E_UNDEF){
+                yyerror("ERROR - Use of undefined var in assignment\n");
+                exit(-1);
+        }
+        if(var->value->nodeType != E_ARRAY){
+                yyerror("ERROR - array index access on non array variable\n");
+                exit(-1);
+        }
+        if((int)getNumVal(literal) > var->value->ival - 1){
+                yyerror("ERROR - array index out of bounce\n");
+                exit(-1);
+        }
 }
 
 
