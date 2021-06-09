@@ -32,6 +32,7 @@
         void checkArrSize(int declSize, int assignSize);
         void assignVar(Variable* var, SyntaxNode* expr);
         void checkArrBeforeAssignment(Variable* var, Data* literal);
+        SyntaxNode* castArray(SyntaxNode* node);
 
         //debug
         void nodeDPrint(char* str);
@@ -339,7 +340,8 @@ arraystruct:    arrayitem
 |       arrayitem ARR_SEP arraystruct
         {
             SyntaxNode* node = makeNode(5, E_ARRAY, INT, arrSizeTmp++, $3, $1);
-            checkType(((SyntaxNode*)$1)->expressionType, ((SyntaxNode*)$3)->expressionType); //TODO Check if this bollocks or not?
+            node = castArray(node); //if int|bool and float --> cast all to float
+            checkType(((SyntaxNode*)$1)->expressionType, ((SyntaxNode*)$3)->expressionType);
             node->expressionType = ((SyntaxNode*)$1)->expressionType;
             $$ = node;
         };
@@ -522,8 +524,6 @@ int main(void) {
 //        printVars();
 	return 0;
 }
-DataType--
-Type: INT
 
 Variable* makeVar(int varType, char* varName){
     Variable* var = (Variable*) malloc(sizeof(Variable));
@@ -780,6 +780,7 @@ char* getValueType(Type type){
 }
 
 void checkType(Type vType, Type eType){
+        printf("t1: %d, t2: %d\n", vType,eType);
     if(vType == FLOAT){
         if(eType == BOOL || eType == INT || eType == FLOAT)return;
     }
@@ -871,6 +872,34 @@ void checkArrBeforeAssignment(Variable* var, Data* literal){
                 yyerror("ERROR - array index out of bounce\n");
                 exit(-1);
         }
+}
+
+SyntaxNode* castArray(SyntaxNode* node){
+        SyntaxNode* root = node;        //save pointer to root
+
+        int leftExprType = node->leftChild->expressionType;
+        int rightExprType = node->rightChild->expressionType;
+        if(((leftExprType==INT) & (rightExprType==INT)) | ((leftExprType==FLOAT) & (rightExprType==FLOAT)))
+        {
+                printf("matching Types %d - %d\n", node->leftChild->ival, node->rightChild->ival);
+        }
+        else if((leftExprType == CHAR) | (leftExprType == STRING) | (rightExprType == CHAR) | (rightExprType == STRING))     //looks bs, but works
+        {
+                printf("Type mismatch leT: %d reT: %d\n", leftExprType, rightExprType);
+                return node;
+        }
+        else
+        {
+                printf("Type mismatch leT: %d reT: %d\n", leftExprType, rightExprType);
+                printf("-->CASTING to float\n");
+                node->rightChild->expressionType = FLOAT;
+                do{
+                        node->leftChild->expressionType = FLOAT;
+                        node = node-> leftChild;
+                }while(node->leftChild);
+        }
+        node = root;    //set pointer back to root
+        return node;
 }
 
 
