@@ -1,4 +1,6 @@
-int [4] b = {555, 565, 55, 666};
-int a = 3;
-a = b[4];
-
+void fun1 (int q);
+int fun (int a, float b)
+{
+	int q = 5;
+}
+fun(a, b, c, d);

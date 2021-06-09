@@ -75,6 +75,7 @@
 %token TYPE_BOOL
 %token TYPE_FLOAT      
 %token TYPE_STRING
+%token TYPE_VOID
 
 %token SQR_LP
 %token SQR_RP
@@ -148,17 +149,45 @@ program:	program declaration
                     assignVar(var, ((SyntaxNode*)$2)->rightChild);
                     nodeDPrint("\n");
                 }
-        |       program controlBlock
+
+        |       program controlBlock //TODO Make it work
                 {
                     nodeDPrint("\n");
                 }
 
+        |       program type VAR MISC_LP paramlist MISC_RP ARR_LP program ARR_RP //TODO Make it work //TODO Stack for programm call depth //TODO VAR scope
+                {
+                    nodeDPrint(" -FUNCTION DEFINITION-\n");
+                }
+
+        |       program type VAR MISC_LP paramlist MISC_RP MISC_SEMI //TODO Make it work
+                {
+                    nodeDPrint(" -FUNCTION FORWARD DECLARATION-\n");
+                }
+
+        |       program VAR MISC_LP arglist MISC_RP MISC_SEMI //TODO Make it work
+                {
+                    nodeDPrint(" -FUNCTION CALL-\n");
+                }
+
         |       program DEBUG MISC_LP LIT_STRING MISC_RP MISC_SEMI { printf("debug: %s \n", ((Data*)$4)->sval);}
+
         |       {
                     nodeDPrint(" -EMPTY- \n");
                     nodeDPrint("Made the EMPTY Node (1)\n\n");
                     $$ = NULL;
                 };
+
+paramlist:      parameter
+        |       parameter ARR_SEP paramlist
+        |;
+
+parameter:      type VAR;
+
+arglist:        VAR
+        |       VAR ARR_SEP arglist
+        |;
+
 
 declaration:    type VAR MISC_SEMI
                 {
@@ -243,8 +272,8 @@ arraystruct:    arrayitem
         };
 
 arrayitem:      exprlvl_1
-        {
-            $$ = $1;
+                {
+                    $$ = $1;
                 }
         |       LIT_CHAR
                 {
@@ -263,7 +292,8 @@ type:           TYPE_INT {$$=INT;}
         |       TYPE_FLOAT {$$=FLOAT;}
         |       TYPE_CHAR {$$=CHAR;}
         |       TYPE_STRING {$$=STRING;}
-        |       TYPE_BOOL {$$=BOOL;};
+        |       TYPE_BOOL {$$=BOOL;}
+        |       TYPE_VOID {$$=VOID;};
 
 
 exprlvl_1:      exprlvl_1 logicOperator exprlvl_2
@@ -422,7 +452,7 @@ int main(void) {
         printf("\n\n---SYNTAX TREE--\n\n");
 //        printProgTree(progRoot);
         printf("\n\n---VAR LIST--\n\n");
-        printVars();
+//        printVars();
 	return 0;
 }
 
@@ -542,6 +572,7 @@ SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...){
         case CHAR:
         case STRING:
         case VARIABLE:
+        case ARRAY:
             node->sval = va_arg(args, char*);
             break;
         default:

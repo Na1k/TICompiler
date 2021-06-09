@@ -8,7 +8,8 @@ typedef enum Type {
         FLOAT,
         STRING,
         VARIABLE,
-        ARRAY
+        ARRAY,
+        VOID
 } Type;
 
 typedef enum Flags {
