@@ -11,13 +11,13 @@ $debug("Declarations end");
 //Declaration with Assignments
 int counter2 = 0;
 string text = "Hallo";
-int array[3] = {1, 2, 3};
-const Fix = 12; 
+int [3] array = {1, 2, 3};
+const int Fix = 12; 
 $debug("Declarations with Assignments end");
 
 //Assignments
 isCorrect = true;
-isFalse = FLASE;
+isFalse = FALSE;
 a = 0; 
 $debug("Assignments end");
 
@@ -26,7 +26,7 @@ IF isCorrect THEN
 	a = 1; 
 	b = 2; 
 	floatNumber = -1.123;
- ELSEIF isFalse THEN 
+ ELIF isFalse THEN 
 	a = -1;
 	b = -2; 
 	c = a + b; 
@@ -34,16 +34,16 @@ IF isCorrect THEN
  	floatNumber = a - b; 
 END 
 
-WHILE a == 1 THEN 
+WHILE a == 1 DO 
 	isCorrect = false;
-	isFalse = 1; 
+	isFalse = true; 
 	a = a + 1; 
 END 
 
-WHILE b > 0 THEN 
+WHILE b > 0 DO 
 	array[1] = 5; 
 	isCorrect = true; 
-	isFalse = 0; 
+	isFalse = false; 
 	b = b + 1; 
 END 
 
