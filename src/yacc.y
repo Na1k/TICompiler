@@ -522,8 +522,6 @@ int main(void) {
 //        printVars();
 	return 0;
 }
-DataType--
-Type: INT
 
 Variable* makeVar(int varType, char* varName){
     Variable* var = (Variable*) malloc(sizeof(Variable));
