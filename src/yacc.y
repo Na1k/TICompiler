@@ -21,18 +21,16 @@
 
         Variable* makeVar(int type, char* name);        //create a Variable construct. Used to store in Datastructure
         void insertVar(Variable* var, Flags flags, SyntaxNode* value);     //insert Var into struct "Variable"
-        void assignVar(Variable* var, SyntaxNode* value);                  //checks if Var exists for assignment
         void printVars();                               //print all nodes in "Variable" (last action of program, called in main)
         Variable* getVar(char* name);                   //retrieve Var from datastructure for insertion on right hand side of assignment
         SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...);
-        float getNumVal(Data* data);
         void printNode(SyntaxNode* node, int progLevel);
         char* getNodeType(NodeType nodeType);
         char* getValueType(Type type);
         void printProgTree(SyntaxNode* prog);
         void checkType(Type vType, Type eType);
         void checkArrSize(int declSize, int assignSize);
-        void checkVarArrCompatibility(Variable* var, SyntaxNode* expr);
+        void assignVar(Variable* var, SyntaxNode* expr);
         void checkArrBeforeAssignment(Variable* var, Data* literal);
 
         //debug
@@ -149,6 +147,7 @@ program:	program declaration
                     {
                         Variable* var = getVar(((SyntaxNode*)$2)->leftChild->aval.sval);
                         SyntaxNode* arrNode = var->value;
+
                         
                         if(((SyntaxNode*)$2)->rightChild->nodeType == E_ARRAY)
                         {
@@ -156,21 +155,24 @@ program:	program declaration
                                 exit(-1);
                         }
 
+                        printf("OG Arr node nT: %d, vt %d, idx: %d\n",arrNode->nodeType, arrNode->valueType, arrNode->ival);
                         do
                         {
                                 arrNode = arrNode->leftChild;
-                        }
+                                printf("Arr node nT: %d, vt %d, idx: %d\n",arrNode->nodeType, arrNode->valueType, arrNode->ival);
+                                printf("current val at index: %d = %d\n",arrNode->ival, arrNode->rightChild->ival);
+                        }                        
                         while(((SyntaxNode*)$2)->leftChild->aval.index--);
 
-                        arrNode->rightChild = ((SyntaxNode*)$2)->rightChild; //->rightChild;
+                        checkType(var->type, exprType);
+                        arrNode->rightChild = ((SyntaxNode*)$2)->rightChild;
 
                     }
                     else if(((SyntaxNode*)$2)->leftChild->valueType == VARIABLE)
                     {
                         Variable* var = getVar(((SyntaxNode*)$2)->leftChild->sval);
-                        checkVarArrCompatibility(var, $2);
                         checkType(var->type, exprType);
-                        assignVar(var, ((SyntaxNode*)$2)->rightChild);
+                        assignVar(var, $2);
                     }
                     else
                     {
@@ -222,7 +224,7 @@ arglist:        VAR
 declaration:    type VAR MISC_SEMI
                 {
                     nodeDPrint(" -DECL UNDEF- (3)\n");
-                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, $1), makeNode(3, E_VALUE, VARIABLE, ((Data*)$2)->sval));
+                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_TYPE, INT, $1), makeNode(3, E_VALUE, VARIABLE, ((Data*)$2)->sval));
                     insertVar(makeVar($1, ((Data*)$2)->sval), E_UNDEF, NULL);
                 }
         |       type assignment
@@ -230,7 +232,7 @@ declaration:    type VAR MISC_SEMI
                     nodeDPrint(" -DECL ASSIGN- (2)\n");
                     Type exprType = ((SyntaxNode*)$2)->rightChild->expressionType;
                     checkType($1, exprType);
-                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, $1), $2);
+                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_TYPE, INT, $1), $2);
                     insertVar(makeVar($1, ((SyntaxNode*)$2)->leftChild->sval), E_VAR, ((SyntaxNode*)$2)->rightChild);
                 }
         |       CONST_DECL type assignment
@@ -238,22 +240,23 @@ declaration:    type VAR MISC_SEMI
                     nodeDPrint(" -DECL CONST- (2)\n");
                     Type exprType = ((SyntaxNode*)$3)->rightChild->expressionType;
                     checkType($2, exprType);
-                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, $2), $3);
+                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_TYPE, INT, $2), $3);
                     insertVar(makeVar($2, ((SyntaxNode*)$3)->leftChild->sval), E_CONST, ((SyntaxNode*)$3)->rightChild);
                 }
         |       type SQR_LP LIT_INT SQR_RP VAR MISC_SEMI
                 {
                     nodeDPrint(" -DECL ARRAY UNDEF- (2)\n");
-                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, $1), makeNode(3, E_VALUE, VARIABLE, ((Data*)$5)->sval));
-                    insertVar(makeVar($1, ((Data*)$5)->sval), E_ARR|E_UNDEF, NULL);
+                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_TYPE, INT, $1), makeNode(3, E_VALUE, VARIABLE, ((Data*)$5)->sval));
+                    SyntaxNode* node = makeNode(3, E_ARRAY, INT, ((Data*)$3)->ival);
+                    insertVar(makeVar($1, ((Data*)$5)->sval), E_ARR|E_UNDEF, node);
                 }
         |       type SQR_LP LIT_INT SQR_RP assignment
                 {
-                    nodeDPrint(" -DECL ARRAY- (2)\n");
-                    checkArrSize((int)getNumVal((Data*)$3), ((SyntaxNode*)$5)->rightChild->ival);
+                    nodeDPrint(" -DECL ARRAY- (2)\n");                    
+                    checkArrSize(((Data*)$3)->ival, ((SyntaxNode*)$5)->rightChild->ival);
                     Type exprType = ((SyntaxNode*)$5)->rightChild->expressionType;
                     checkType($1, exprType);
-                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_VALUE, INT, $1), $5);
+                    $$ = makeNode(5, E_OPERATION, STRING, "DECL", makeNode(3, E_TYPE, INT, $1), $5);
                     insertVar(makeVar($1, ((SyntaxNode*)$5)->leftChild->sval), E_ARR, ((SyntaxNode*)$5)->rightChild);
                 };
 
@@ -279,7 +282,7 @@ assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
         |       VAR ASSIGN ARR_LP arraystruct ARR_RP MISC_SEMI
                 {
                     nodeDPrint(" -ASSIGN ARRAY- (2)\n");
-                    SyntaxNode* arrNode = makeNode(4, E_ARRAY, INT, (float)arrSizeTmp, $4);
+                    SyntaxNode* arrNode = makeNode(4, E_ARRAY, INT, arrSizeTmp, $4);
                     arrNode->expressionType = ((SyntaxNode*)$4)->expressionType;
                     SyntaxNode* node = makeNode(5, E_OPERATION, STRING, "=", makeNode(3, E_VALUE, VARIABLE, ((Data*)$1)->sval), arrNode);
                     $$ = node;
@@ -291,7 +294,7 @@ assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
                         checkArrBeforeAssignment(getVar(((Data*)$1)->sval), $3);
                         
                         SyntaxNode *node = makeNode(3, E_VALUE, ARRAY, NULL);
-                        node->aval.index = (int)getNumVal((Data*)$3);
+                        node->aval.index = ((Data*)$3)->ival;
                         node->aval.sval = ((Data*)$1)->sval;       
                         
                         $$ = makeNode(5, E_OPERATION, STRING, "=", node, $6);
@@ -303,7 +306,7 @@ assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
                         checkArrBeforeAssignment(getVar(((Data*)$1)->sval), $3);
                         
                         SyntaxNode *node = makeNode(3, E_VALUE, ARRAY, NULL);
-                        node->aval.index = (int)getNumVal((Data*)$3);
+                        node->aval.index = ((Data*)$3)->ival;
                         node->aval.sval = ((Data*)$1)->sval;
                         
                         SyntaxNode *charNode = makeNode(3, E_VALUE, CHAR, ((Data*)$6)->sval);
@@ -317,7 +320,7 @@ assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
                         checkArrBeforeAssignment(getVar(((Data*)$1)->sval), $3);
                         
                         SyntaxNode *node = makeNode(3, E_VALUE, ARRAY, NULL);
-                        node->aval.index = (int)getNumVal((Data*)$3);
+                        node->aval.index = ((Data*)$3)->ival;
                         node->aval.sval = ((Data*)$1)->sval;
 
                         SyntaxNode *strNode = makeNode(3, E_VALUE, STRING, ((Data*)$6)->sval);
@@ -329,13 +332,13 @@ assignment:     VAR ASSIGN exprlvl_1 MISC_SEMI
 
 arraystruct:    arrayitem
         {
-            SyntaxNode* node = makeNode(5, E_ARRAY, INT, (float)arrSizeTmp++, NULL, $1);
+            SyntaxNode* node = makeNode(5, E_ARRAY, INT, arrSizeTmp++, NULL, $1);
             node->expressionType = ((SyntaxNode*)$1)->expressionType;
             $$ = node;
         }
 |       arrayitem ARR_SEP arraystruct
         {
-            SyntaxNode* node = makeNode(5, E_ARRAY, INT, (float)arrSizeTmp++, $3, $1);
+            SyntaxNode* node = makeNode(5, E_ARRAY, INT, arrSizeTmp++, $3, $1);
             checkType(((SyntaxNode*)$1)->expressionType, ((SyntaxNode*)$3)->expressionType); //TODO Check if this bollocks or not?
             node->expressionType = ((SyntaxNode*)$1)->expressionType;
             $$ = node;
@@ -422,7 +425,11 @@ literal:        MISC_LP exprlvl_1 MISC_RP {$$ = $2;}
                 {
                     nodeDPrint(" -LIT NUM (1)-\n");
                     Type exprType = ((Data*)$1)->type;
-                    SyntaxNode *node = makeNode(3, E_VALUE, ((Data*)$1)->type, getNumVal((Data*)$1));
+                     SyntaxNode *node;
+                    if(exprType == INT)
+                        node = makeNode(3, E_VALUE, exprType, ((Data*)$1)->ival);
+                    else if(exprType == FLOAT)
+                        node = makeNode(3, E_VALUE, exprType, ((Data*)$1)->fval);
                     node->expressionType = exprType;
                     $$ = node;
                 }
@@ -455,7 +462,7 @@ literal:        MISC_LP exprlvl_1 MISC_RP {$$ = $2;}
 
                     Type exprType = getVar(((Data*)$1)->sval)->type;
                     SyntaxNode *node = makeNode(3, E_VALUE, ARRAY, NULL);
-                    node->aval.index = (int)getNumVal((Data*)$3);
+                    node->aval.index = ((Data*)$3)->ival;
                     node->aval.sval = ((Data*)$1)->sval;
                     node->expressionType = exprType;
                     $$ = node;
@@ -510,11 +517,13 @@ int main(void) {
         printf("\n\n---NODE CREATION--\n\n");
         yyparse();
         printf("\n\n---SYNTAX TREE--\n\n");
-//        printProgTree(progRoot);
+        printProgTree(progRoot);
         printf("\n\n---VAR LIST--\n\n");
-        printVars();
+//        printVars();
 	return 0;
 }
+DataType--
+Type: INT
 
 Variable* makeVar(int varType, char* varName){
     Variable* var = (Variable*) malloc(sizeof(Variable));
@@ -550,16 +559,6 @@ void insertVar(Variable* var, Flags flags, SyntaxNode* value){
     }
 }
 
-void assignVar(Variable* var, SyntaxNode* value){
-        if(var->flags & E_CONST){
-            yyerror("Fehlermeldung, Neuzuweisung Konstante - pfui");
-            exit(-1);
-        }
-        var->flags = E_VAR;
-        var->value = value;
-        return;
-}
-
 void printVars(){
         Variable* tmp;
         tmp = varRoot;
@@ -567,15 +566,8 @@ void printVars(){
         while(tmp){
                 printf("-----------------------------------\n");
                 printf("%d Type: %d Name: %s Flags: %d\n", varNum, tmp->type, tmp->name, tmp->flags);
-                if(tmp->value->valueType == ARRAY){
-                    SyntaxNode* arrNode = getVar(tmp->value->aval.sval)->value;
-                    printf("array var index: %d\n", tmp->value->aval.index);
-                    do{
-                        arrNode = arrNode->leftChild;
-                    }
-                    while(tmp->value->aval.index--);
-                    printProgTree(arrNode->rightChild);
-                }
+                if(tmp->flags & E_UNDEF)
+                    printf("Var has no assigned value\n");
                 else{
                     printProgTree(tmp->value);
                 }
@@ -620,10 +612,8 @@ SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...){
 
         switch (valueType) {
         case BOOL:
-            node->ival = va_arg(args, int);
-            break;
         case INT:
-            node->ival = (int)va_arg(args, double);
+            node->ival = va_arg(args, int);
             break;
         case FLOAT:
             node->fval = (float)va_arg(args, double);
@@ -658,19 +648,6 @@ SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...){
         return node;
 }
 
-float getNumVal(Data* data){
-        if(data->type == INT)
-        {
-                return (float)data->ival;
-        }
-        else if(data->type == FLOAT)
-        {
-                return data->fval;
-        }
-        return 0;
-}
-
-
 void printProgTree(SyntaxNode* prog){
 
     countProgTree++;
@@ -681,26 +658,14 @@ void printProgTree(SyntaxNode* prog){
     }
 
     if(prog->leftChild){
-        if(prog->leftChild->nodeType == E_OPERATION)
-        {
-            printf("(%d)stepping down into leftChild: %s\n", countProgTree, prog->leftChild->sval);
-        }
-        else if(prog->leftChild->nodeType == E_VALUE)
-        {
-            printf("(%d)stepping down into leftChild: Value\n", countProgTree);
-        }
-        else if(prog->leftChild->nodeType == E_ARRAY)
-        {
-            printf("(%d)stepping down into leftChild: ARRAY\n", countProgTree);
+        printf("(%d)stepping down into leftChild: %s\n", countProgTree, getNodeType(prog->leftChild->nodeType));
+        if(prog->leftChild->nodeType == E_OPERATION){
+            printf("%s\n", prog->leftChild->sval);
         }
         else if(prog->leftChild->nodeType == E_PROG)
         {
             printf("-------------------------Left is a new PROGRAM-node!\n");
             progLevel++;
-        }
-        else
-        {
-            printf("Node Error\n");
         }
         printProgTree(prog->leftChild);
         printf("(%d)stepping up from left\n", countProgTree);
@@ -714,21 +679,9 @@ void printProgTree(SyntaxNode* prog){
     printNode(prog, progLevel);
 
     if(prog->rightChild){
-        if(prog->rightChild->nodeType == E_OPERATION)
-        {
-            printf("(%d)stepping down into rightChild: %s\n", countProgTree, prog->rightChild->sval);
-        }
-        else if(prog->rightChild->nodeType == E_VALUE)
-        {
-            printf("(%d)stepping down into rightChild: Value\n", countProgTree);
-        }
-        else if(prog->leftChild->nodeType == E_ARRAY)
-        {
-            printf("(%d)stepping down into leftChild: ARRAY\n", countProgTree);
-        }
-        else
-        {
-            printf("Node Error\n");
+        printf("(%d)stepping down into rightChild: %s\n", countProgTree, getNodeType(prog->rightChild->nodeType));
+        if(prog->rightChild->nodeType == E_OPERATION){
+            printf("%s\n", prog->rightChild->sval);
         }
         printProgTree(prog->rightChild);
         printf("(%d)stepping up from right\n", countProgTree);
@@ -746,8 +699,23 @@ void printNode(SyntaxNode* node, int progLevel){
         printf("valueType: %s\n", getValueType(node->valueType));
         printf("opString: %s\n", node->sval);
     }
+    else if(node->nodeType == E_TYPE){
+        printf("--DataType--\n");
+        printf("Type: %s\n", getValueType(node->ival));
+    }
     else if(node->nodeType == E_VALUE)
     {
+        if(node->valueType == ARRAY){
+            printf("--ARRAY NODE LOOKUP--\n");
+            SyntaxNode* arrNode = getVar(node->aval.sval)->value;
+            printf("array var index: %d\n", node->aval.index);
+            do{
+                arrNode = arrNode->leftChild;
+            }
+            while(node->aval.index--);
+            printProgTree(arrNode->rightChild);
+            return;
+        }
         printf("--Value--\n");
         printf("valueType: %s\n", getValueType(node->valueType));
         printf("value: ");
@@ -782,6 +750,8 @@ char* getNodeType(NodeType nodeType){
                         return "E_PROG";
                 case E_ARRAY:
                         return "E_ARRAY";
+                case E_TYPE:
+                        return "E_TYPE";
                 default:
                         return "WTFF?";
         }
@@ -835,19 +805,54 @@ void checkArrSize(int declSize, int assignSize){
     exit(-1);
 }
 
-void checkVarArrCompatibility(Variable* var, SyntaxNode* expr){
-    if(var->flags & E_ARR)
+void assignVar(Variable* var, SyntaxNode* expr){
+    if(var->flags & E_ARR){
         if(expr->rightChild->nodeType == E_ARRAY)
+        {
+            var->flags = E_ARR;
+            var->value = expr->rightChild;
             return;
+        }
+        else if(expr->rightChild->valueType == VARIABLE){
+            Variable* arrVar = getVar(expr->rightChild->sval);
+            if(!(arrVar->flags & E_ARR)){
+                yyerror("ERROR - can't assign non array variable to array variable");
+                exit(-1);
+            }
+            if(var->value->ival != arrVar->value->ival){
+                yyerror("ERROR - can't assign arrays of non matching dimensions");
+                exit(-1);
+            }
+            else{
+                var->flags = E_ARR;
+                var->value = arrVar->value;
+                return;
+            }
+        }
         else{
             yyerror("ERROR - can't assign non array expression to array variable");
             exit(-1);
         }
+    }
     else{
-        if(!(expr->rightChild->nodeType == E_ARRAY))
+        if(!(expr->rightChild->nodeType == E_ARRAY)){
+            if(expr->rightChild->valueType == VARIABLE){
+                Variable* arrVar = getVar(expr->rightChild->sval);
+                if(arrVar->flags & E_ARR){
+                    yyerror("ERROR - can't assign array variable to non array variable");
+                    exit(-1);
+                }
+            }
+            var->flags = E_VAR;
+            var->value = expr->rightChild;
             return;
+        }
         else{
             yyerror("ERROR - can't assign array expression to non array variable");
+            exit(-1);
+        }
+        if(var->flags & E_CONST){
+            yyerror("ERROR - can't assign to const var - pfui");
             exit(-1);
         }
     }
@@ -862,7 +867,7 @@ void checkArrBeforeAssignment(Variable* var, Data* literal){
                 yyerror("ERROR - array index access on non array variable\n");
                 exit(-1);
         }
-        if((int)getNumVal(literal) > var->value->ival - 1){
+        if(literal->ival > var->value->ival - 1){
                 yyerror("ERROR - array index out of bounce\n");
                 exit(-1);
         }

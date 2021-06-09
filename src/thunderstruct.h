@@ -23,7 +23,8 @@ typedef enum NodeType {
         E_OPERATION = 0,
         E_VALUE,
         E_PROG,
-        E_ARRAY
+        E_ARRAY,
+        E_TYPE
 } NodeType;
 
 typedef struct SyntaxNode {
