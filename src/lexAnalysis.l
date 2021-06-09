@@ -26,7 +26,9 @@
 "bool"                  return TYPE_BOOL;
 "float"                 return TYPE_FLOAT;
 "string"                return TYPE_STRING;
-"[]"       return TYPE_ARRAY;
+
+"["                     return SQR_LP;
+"]"                     return SQR_RP;
 
 ("const"|"CONST")       return CONST_DECL;
 
@@ -59,7 +61,7 @@
 
  /* XOR */
 
-0			{yylval.content = (void*)createIntLiteral(INT,0); return LIT_ZERO;}
+0			{yylval.content = (void*)createIntLiteral(INT,0); return LIT_INT;}
 [1-9][0-9]*		{yylval.content = (void*)createIntLiteral(INT,atoi(yytext)); return LIT_INT;}
 "'"[a-zA-Z0-9_ ]?"'"    {yylval.content = (void*)createStringLiteral(CHAR, yytext); return LIT_CHAR;}
 ("TRUE"|"true")         {yylval.content = (void*)createIntLiteral(BOOL,1); return LIT_BOOL;}
