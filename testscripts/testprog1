@@ -8,15 +8,12 @@ int[6] array[] = {0,0,0,0,0,0};
 float[3] f_arr[] = {0,0,0};
 
 int carry = 100-count;                  //carry 0
-//array[carry] = count%7;                 //2
 array[0] = count%7;                     //2
 count = count -1;                       //count 99
 carry = 100-count;                      //carry 1
-//array[carry] = (count*3-27)/10+55;      //82
 array[1] = (count*3-27)/10+55;      //82
 count = count -1;                       //count 98
-carry = 100-count;                      //carry 2   
-//array[carry] = true;
+carry = 100-count;                      //carry 2
 array[2] = true;
 array[3] = 2^4;                         
 array[4] = hasEnd | array[2];

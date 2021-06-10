@@ -9,7 +9,8 @@ bool [2] arrayBool[] = {true, false};
 char [4] arrayCharr[] = {'h', 'a', 'l', 'l'};
 string [3] arrayString[] = {"HALLO", "Hi", "Hola"};
 
-arrayInt[] = {1+3, 4*2}; 
+arrayInt[] = {1+3, 4*2};
+ 
 IF arrayBool[0] THEN
  arrayFloat[2] = 2.5; 
  arrayFloat[2] = 1 * 2.5 / 2.5;

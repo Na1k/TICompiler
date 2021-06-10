@@ -141,7 +141,7 @@ program:	program declaration
                     progRoot = makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
                     nodeDPrint("\n");
                 }
-        |       program assignment      //a = ...;
+        |       program assignment      //a = ...
                 {
                     nodeDPrint (" -PROG ASSIGN-  (1)\n");
                     progRoot= makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
@@ -151,6 +151,7 @@ program:	program declaration
                     {
                         Variable* var = getVar(((SyntaxNode*)$2)->leftChild->sval);
                         checkType(var->type, exprType);
+                        var->flags = E_VAR;
                     }
                     else
                     {
@@ -159,7 +160,7 @@ program:	program declaration
                     }
                     nodeDPrint("\n");
                 }
-        |       program arrAssignment   //arr = {..};
+        |       program arrAssignment   //arr = {..}
                 {
                     nodeDPrint (" -PROG ASSIGN-  (1)\n");
                     progRoot= makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
@@ -169,6 +170,7 @@ program:	program declaration
                     {
                         Variable* var = getVar(((SyntaxNode*)$2)->leftChild->sval);
                         checkType(var->type, exprType);
+                        var->flags = E_ARR;
                     }
                     else
                     {
@@ -177,7 +179,7 @@ program:	program declaration
                     }
                     nodeDPrint("\n");
                 }
-        |       program arrIndexAssignment      //arr[1] = ...;
+        |       program arrIndexAssignment      //arr[1] = ...
                 {
                     nodeDPrint (" -PROG ASSIGN-  (1)\n");
                     progRoot= makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
@@ -187,7 +189,7 @@ program:	program declaration
                     {
                         Variable* var = getVar(((SyntaxNode*)$2)->leftChild->aval.sval);
                         checkType(var->type, exprType);
-
+                        
                     }
                     else
                     {

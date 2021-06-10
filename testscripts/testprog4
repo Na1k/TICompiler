@@ -11,7 +11,7 @@ $debug("Declarations end");
 //Declaration with Assignments
 int counter2 = 0;
 string text = "Hallo";
-int [3] array = {1, 2, 3};
+int [3] array[] = {1, 2, 3};
 const int Fix = 12; 
 $debug("Declarations with Assignments end");
 
