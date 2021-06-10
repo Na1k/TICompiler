@@ -754,7 +754,7 @@ void printNode(SyntaxNode* node){
         printf("--ARRAY STEM NODE--\n");
     }
     else if(node->nodeType == E_PROG){
-        printf("--PROGRAMM--\n");
+        printf("--PROGRAM--\n");
     }
     else if(node->nodeType == E_VALUE)
     {
