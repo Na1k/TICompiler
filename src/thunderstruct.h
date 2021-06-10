@@ -46,11 +46,6 @@ typedef struct SyntaxNode {
         struct SyntaxNode* rightChild;
 } SyntaxNode;
 
-typedef struct NodeQueue {
-        SyntaxNode* node;
-        struct NodeQueue* next;
-} NodeQueue;
-
 typedef struct Variable {
         char* name;
         Type type;
