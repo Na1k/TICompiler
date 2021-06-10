@@ -43,7 +43,6 @@ IF aaa==23
     AAA = 2;
 END
 
-
 $debug("CONTROLBLOCKS working");
 
 

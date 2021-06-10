@@ -1,0 +1,36 @@
+$debug("Test start");
+
+//Arrays
+int [2] arrayInt;
+arrayInt[1] = 3;
+float [3] arrayFloat[] = {1.2, 3, 5.123}; 
+char [5] arrayChar[] = {'h', 'a', 'l', 'l', 'o'};
+bool [2] arrayBool[] = {true, false};
+char [4] arrayCharr[] = {'h', 'a', 'l', 'l'};
+string [3] arrayString[] = {"HALLO", "Hi", "Hola"};
+
+arrayInt[] = {1+3, 4*2}; 
+IF arrayBool[0] THEN
+ arrayFloat[2] = 2.5; 
+ arrayFloat[2] = 1 * 2.5 / 2.5;
+ELIF arrayBool[0] == false THEN 
+ arrayString[0] = "HUHU"; 
+END
+
+//calculations 
+float floatNumb_1 = 0; 
+float floatNumb_2 = 1.12; 
+int intNumb_1 = 0;
+int intNumb_2 = 1; 
+float result1; 
+float result2; 
+int reslut3; 
+
+result1 = floatNumb_1 * 2 + floatNumb_2 + 0.88; 
+result2 = (floatNumb_1 + floatNumb_2) * 1 / 12; 
+reslut3 = (intNumb_2 - 5) * (intNumb_1 + 1); 
+
+intNumb_1 = 3; 
+intNumb_2 = intNumb_1^2; 
+
+$debug("Test End"); 
