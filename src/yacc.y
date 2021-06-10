@@ -141,7 +141,7 @@ program:	program declaration
                     progRoot = makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
                     nodeDPrint("\n");
                 }
-        |       program assignment //a = ...;
+        |       program assignment      //a = ...;
                 {
                     nodeDPrint (" -PROG ASSIGN-  (1)\n");
                     progRoot= makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
@@ -159,7 +159,7 @@ program:	program declaration
                     }
                     nodeDPrint("\n");
                 }
-        |       program arrAssignment //arr = {..};
+        |       program arrAssignment   //arr = {..};
                 {
                     nodeDPrint (" -PROG ASSIGN-  (1)\n");
                     progRoot= makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
@@ -177,7 +177,7 @@ program:	program declaration
                     }
                     nodeDPrint("\n");
                 }
-        |       program arrIndexAssignment //arr[1] = ...;
+        |       program arrIndexAssignment      //arr[1] = ...;
                 {
                     nodeDPrint (" -PROG ASSIGN-  (1)\n");
                     progRoot= makeNode(5, E_PROG, STRING, "Prog", progRoot, $2);
@@ -197,22 +197,22 @@ program:	program declaration
                     nodeDPrint("\n");
                 }
 
-        |       program controlBlock //TODO Make it work
+        |       program controlBlock
                 {
                     nodeDPrint("\n");
                 }
 
-        |       program type VAR MISC_LP paramlist MISC_RP ARR_LP program ARR_RP //TODO Make it work //TODO Stack for programm call depth //TODO VAR scope
+        |       program type VAR MISC_LP paramlist MISC_RP ARR_LP program ARR_RP
                 {
                     nodeDPrint(" -FUNCTION DEFINITION-\n");
                 }
 
-        |       program type VAR MISC_LP paramlist MISC_RP MISC_SEMI //TODO Make it work
+        |       program type VAR MISC_LP paramlist MISC_RP MISC_SEMI
                 {
                     nodeDPrint(" -FUNCTION FORWARD DECLARATION-\n");
                 }
 
-        |       program VAR MISC_LP arglist MISC_RP MISC_SEMI //TODO Make it work
+        |       program VAR MISC_LP arglist MISC_RP MISC_SEMI
                 {
                     nodeDPrint(" -FUNCTION CALL-\n");
                 }
@@ -707,7 +707,6 @@ SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...){
         return node;
 }
 
-//TODO REWORK
 void printProgTree(SyntaxNode* prog){
 
     countProgTree++;
@@ -755,7 +754,7 @@ void printNode(SyntaxNode* node){
         printf("--ARRAY STEM NODE--\n");
     }
     else if(node->nodeType == E_PROG){
-        printf("--PROGRAMM--\n");
+        printf("--PROGRAM--\n");
     }
     else if(node->nodeType == E_VALUE)
     {
