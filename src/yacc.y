@@ -7,6 +7,7 @@
 
 //        #define NODEDEBUG
 
+
         extern FILE *yyin;
         int lineno = 1;
         int arrSizeTmp = 0;
@@ -152,7 +153,7 @@ program:	program declaration
                         
                         if(((SyntaxNode*)$2)->rightChild->nodeType == E_ARRAY)
                         {
-                                yyerror("Multi-Dimensional Arrays are not allowed!");
+                                yyerror("ERROR - Multi-Dimensional Arrays are not allowed!");
                                 exit(-1);
                         }
 
@@ -507,11 +508,11 @@ int main(void) {
 //        FILE *fh;
 //        fh = fopen("/home/moritz/flex/TICompiler/src/input", "r");
 //        yyin = fh;
-        printf("\n\n---NODE CREATION--\n\n");
+//        printf("\n\n---NODE CREATION--\n\n");
         yyparse();
-        printf("\n\n---SYNTAX TREE--\n\n");
-        printProgTree(progRoot);
-        printf("\n\n---VAR LIST--\n\n");
+//        printf("\n\n---SYNTAX TREE--\n\n");
+//        printProgTree(progRoot);
+//        printf("\n\n---VAR LIST--\n\n");
 //        printVars();
 	return 0;
 }
@@ -538,7 +539,7 @@ void insertVar(Variable* var, Flags flags, SyntaxNode* value){
             while(tmp){
                 if(strcmp(tmp->name, var->name) == 0){
                         free(var);
-                        yyerror("Fehlermeldung, VarName bereits vorhanden");
+                        yyerror("ERROR - redefinition of var");
                         exit(-1);
                 }
                 if(tmp->next)
@@ -583,7 +584,7 @@ Variable* getVar(char* name){
                 else
                     break;
         }
-        yyerror("Fehlermeldung, Var nicht deklariert");
+        yyerror("ERROR - use of undeclared var");
         exit(-1);        
 }
 
@@ -616,7 +617,7 @@ SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...){
             node->sval = va_arg(args, char*);
             break;
         default:
-            yyerror("Node ValueType error!");
+            yyerror("ERROR - Node ValueType error (internal)");
         }
         if(argCount>=4){
                 SyntaxNode* leftChild = va_arg(args, SyntaxNode*);
@@ -639,6 +640,8 @@ SyntaxNode* makeNode(int argCount, int nodeType, int valueType, ...){
         return node;
 }
 
+
+//TODO rework prints
 void printProgTree(SyntaxNode* prog){
 
     countProgTree++;
@@ -745,7 +748,7 @@ char* getNodeType(NodeType nodeType){
                 case E_TYPE:
                         return "E_TYPE";
                 default:
-                        return "WTFF?";
+                        return "UNKNOWN NODE TYPE";
         }
 }
 
@@ -767,12 +770,11 @@ char* getValueType(Type type){
                 case ARRAY:
                         return "ARRAY";
                 default:
-                        return "WTF?";
+                        return "UNKNOWN TYPE";
         }
 }
 
 void checkType(Type vType, Type eType){
-        printf("t1: %d, t2: %d\n", vType,eType);
     if(vType == FLOAT){
         if(eType == BOOL || eType == INT || eType == FLOAT)return;
     }
@@ -873,17 +875,15 @@ SyntaxNode* castArray(SyntaxNode* node){
         int rightExprType = node->rightChild->expressionType;
         if(((leftExprType==INT) & (rightExprType==INT)) | ((leftExprType==FLOAT) & (rightExprType==FLOAT)) | ((leftExprType==BOOL) & (rightExprType==BOOL)))
         {
-                printf("matching Types %d - %d\n", node->leftChild->ival, node->rightChild->ival);
+                return node;
         }
-        else if((leftExprType == CHAR) | (leftExprType == STRING) | (rightExprType == CHAR) | (rightExprType == STRING))     //looks bs, but works
+        else if((leftExprType == CHAR) | (leftExprType == STRING) | (rightExprType == CHAR) | (rightExprType == STRING))
         {
-                printf("leT: %d reT: %d\n", leftExprType, rightExprType);
                 return node;
         }
         else if(((leftExprType == BOOL) & (rightExprType == INT)) | ((leftExprType == INT) & (rightExprType == BOOL)))
         {
-                printf("Type mismatch leT: %d reT: %d\n", leftExprType, rightExprType);
-                printf("-->CASTING to int\n");
+                //cast to int
                 node->rightChild->expressionType = INT;
                 do{
                         node->leftChild->expressionType = INT;
@@ -892,8 +892,7 @@ SyntaxNode* castArray(SyntaxNode* node){
         }
         else
         {
-                printf("Type mismatch leT: %d reT: %d\n", leftExprType, rightExprType);
-                printf("-->CASTING to float\n");
+                //cast to float
                 node->rightChild->expressionType = FLOAT;
                 do{
                         node->leftChild->expressionType = FLOAT;

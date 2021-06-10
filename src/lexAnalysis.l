@@ -5,6 +5,8 @@
 	#include "y.tab.h"
         #include "thunderstruct.h"
 
+//        #define SHOWCOMMENTS
+
         /*
          * TODO Create dictionary for Variable name & content transfer to yacc
          */
@@ -82,8 +84,13 @@
 \n			{
 				lineno++;
 			}
-[ \t]			;
-"//".*\n                { lineno++; /*printf("COMMENT\n");*/}
+[ \t\r]			;
+"//".*\n                {
+                             lineno++;
+#ifdef SHOWCOMMENTS
+                             printf("COMMENT\n");
+#endif
+                         }
 
 "$debug"                return DEBUG;  
 
