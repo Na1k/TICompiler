@@ -7,9 +7,6 @@
 
 //        #define SHOWCOMMENTS
 
-        /*
-         * TODO Create dictionary for Variable name & content transfer to yacc
-         */
         extern int lineno;
 
         //Forward-Declaration
@@ -61,8 +58,6 @@
 "&"                     return LOGIC_AND;
 "|"                     return LOGIC_OR;
 "!"                     return LOGIC_NOT;
-
- /* XOR */
 
 0			{yylval.content = (void*)createIntLiteral(INT,0); return LIT_INT;}
 [1-9][0-9]*		{yylval.content = (void*)createIntLiteral(INT,atoi(yytext)); return LIT_INT;}
