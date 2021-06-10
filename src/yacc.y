@@ -155,15 +155,6 @@ program:	program declaration
                                 exit(-1);
                         }
 
-                        printf("OG Arr node nT: %d, vt %d, idx: %d\n",arrNode->nodeType, arrNode->valueType, arrNode->ival);
-                        do
-                        {
-                                arrNode = arrNode->leftChild;
-                                printf("Arr node nT: %d, vt %d, idx: %d\n",arrNode->nodeType, arrNode->valueType, arrNode->ival);
-                                printf("current val at index: %d = %d\n",arrNode->ival, arrNode->rightChild->ival);
-                        }                        
-                        while(((SyntaxNode*)$2)->leftChild->aval.index--);
-
                         checkType(var->type, exprType);
                         arrNode->rightChild = ((SyntaxNode*)$2)->rightChild;
 
@@ -707,10 +698,11 @@ void printNode(SyntaxNode* node, int progLevel){
             printf("--ARRAY NODE LOOKUP--\n");
             SyntaxNode* arrNode = getVar(node->aval.sval)->value;
             printf("array var index: %d\n", node->aval.index);
+            int tmpIndex = node->aval.index;
             do{
                 arrNode = arrNode->leftChild;
             }
-            while(node->aval.index--);
+            while(tmpIndex--);
             printProgTree(arrNode->rightChild);
             return;
         }
