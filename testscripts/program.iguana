@@ -1,0 +1,14 @@
+
+//constants
+const float PI = 3.14159265359;
+
+//variables
+int [3] radius[] = {1,2,3};     //in cm
+int arrLength = 3;
+float [3] Flaeche[] = {5,6,7};
+
+Flaeche[0] = PI * radius[0]^2;
+
+Flaeche[1] = PI * radius[1]^2;
+
+Flaeche[2] = PI * radius[2]^2;

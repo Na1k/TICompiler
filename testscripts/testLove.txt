@@ -1,0 +1,49 @@
+$debug("Test is love, test is life.");
+
+int count = 100;
+bool hasEnd = false;
+const char c = 'C';
+
+int[100] array;
+float[3] f_arr = {0,0,0};
+
+int carry = 100-count;                  //carry 0
+array[carry] = count%7;                 //2
+count = count -1;                       //count 99
+carry = 100-count;                      //carry 1
+array[carry] = (count*3-27)/10+55;      //82
+count = count -1;                       //count 98
+carry = 100-count;                      //carry 2   
+array[carry] = true;
+array[3] = 2^4;                         
+array[4] = hasEnd | array[2]
+array[5] = hasEnd & array[2]
+
+
+f_arr[0]= array[2] + array[0];          //3
+f_arr[1] = count;                       //98
+f_arr[2] = array[0] < 10;               //1
+
+count = carry-count;                    //-96
+
+float load = array[3] * 2;
+float save = load * 1.78;
+
+hasEnd = true;
+
+
+$debug("Expected Result:\n");
+$debug("hastEnd = true");
+$debug("c = C");
+$debug("array[0] = 2");
+$debug("array[1] = 82");
+$debug("array[2] = 1");
+$debug("array[3] = 16");
+$debug("array[4] = 1");
+$debug("array[4] = 0");
+$debug("f_arr[0] = 3");
+$debug("f_arr[1] = 98");
+$debug("f_arr[2] = 1");
+$debug("count = -96");
+$debug("load = 32.0");
+$debug("save = 56.96");

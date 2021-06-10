@@ -70,7 +70,7 @@
 ("TRUE"|"true")         {yylval.content = (void*)createIntLiteral(BOOL,1); return LIT_BOOL;}
 ("FALSE"|"false")       {yylval.content = (void*)createIntLiteral(BOOL,0); return LIT_BOOL;}
 ([1-9][0-9]*|0)\.[0-9]* {yylval.content = (void*)createFloatLiteral(FLOAT,atof(yytext)); return LIT_FLOAT;}
-"\"".*"\""              {yylval.content = (void*)createStringLiteral(STRING, yytext); return LIT_STRING;}
+"\""[^\"]*"\""              {yylval.content = (void*)createStringLiteral(STRING, yytext); return LIT_STRING;}
 
 "{"                     return ARR_LP;
 "}"                     return ARR_RP;
