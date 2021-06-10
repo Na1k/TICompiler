@@ -879,14 +879,24 @@ SyntaxNode* castArray(SyntaxNode* node){
 
         int leftExprType = node->leftChild->expressionType;
         int rightExprType = node->rightChild->expressionType;
-        if(((leftExprType==INT) & (rightExprType==INT)) | ((leftExprType==FLOAT) & (rightExprType==FLOAT)))
+        if(((leftExprType==INT) & (rightExprType==INT)) | ((leftExprType==FLOAT) & (rightExprType==FLOAT)) | ((leftExprType==BOOL) & (rightExprType==BOOL)))
         {
                 printf("matching Types %d - %d\n", node->leftChild->ival, node->rightChild->ival);
         }
         else if((leftExprType == CHAR) | (leftExprType == STRING) | (rightExprType == CHAR) | (rightExprType == STRING))     //looks bs, but works
         {
-                printf("Type mismatch leT: %d reT: %d\n", leftExprType, rightExprType);
+                printf("leT: %d reT: %d\n", leftExprType, rightExprType);
                 return node;
+        }
+        else if(((leftExprType == BOOL) & (rightExprType == INT)) | ((leftExprType == INT) & (rightExprType == BOOL)))
+        {
+                printf("Type mismatch leT: %d reT: %d\n", leftExprType, rightExprType);
+                printf("-->CASTING to int\n");
+                node->rightChild->expressionType = INT;
+                do{
+                        node->leftChild->expressionType = INT;
+                        node = node-> leftChild;
+                }while(node->leftChild);
         }
         else
         {
