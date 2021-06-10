@@ -1,0 +1,59 @@
+//Declarations
+int counter;
+int a;
+int b;
+int c;
+float floatNumber;
+bool isCorrect;
+bool isFalse;
+$debug("Declarations end");
+
+//Declaration with Assignments
+int counter2 = 0;
+string text = "Hallo";
+int [3] array = {1, 2, 3};
+const int Fix = 12; 
+$debug("Declarations with Assignments end");
+
+//Assignments
+isCorrect = true;
+isFalse = FALSE;
+a = 0; 
+$debug("Assignments end");
+
+//Controlblock
+IF isCorrect THEN 
+	a = 1; 
+	b = 2; 
+	floatNumber = -1.123;
+ ELIF isFalse THEN 
+	a = -1;
+	b = -2; 
+	c = a + b; 
+ ELSE 
+ 	floatNumber = a - b; 
+END 
+
+WHILE a == 1 DO 
+	isCorrect = false;
+	isFalse = true; 
+	a = a + 1; 
+END 
+
+WHILE b > 0 DO 
+	array[1] = 5; 
+	isCorrect = true; 
+	isFalse = false; 
+	b = b + 1; 
+END 
+
+$debug("Controlblock end");
+
+//No Errors 
+
+
+
+
+	
+	
+	
