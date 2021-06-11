@@ -5,7 +5,7 @@
         #include <stdlib.h>
         #include "thunderstruct.h"
 
-//        #define NODEDEBUG
+        #define NODEDEBUG
 
 
         extern FILE *yyin;
@@ -713,6 +713,11 @@ void printProgTree(SyntaxNode* prog){
 
     countProgTree++;
 
+    //If empty
+    if(!prog){
+        return;
+    }
+
     if(prog->leftChild){
         if(prog->leftChild->nodeType == E_PROG)
         {
@@ -737,10 +742,6 @@ void printProgTree(SyntaxNode* prog){
 
 void printNode(SyntaxNode* node){
 
-    //If empty
-    if(!node){
-        return;
-    }
 
     if(node->nodeType == E_OPERATION)
     {
